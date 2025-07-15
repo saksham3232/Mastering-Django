@@ -107,18 +107,25 @@ Welcome
     }
   }
 </style>
-{% endblock %} {% block body %} Hello World! <br />
-{{ age }} <br />
-{{ array }} <br />
+{% endblock %}
+
+{% block body %}
+Hello World!
+<br/>
+{{ age }}
+<br/>
+{{ array }}
+<br/>
 
 {% for i in array %} {{ i }} {% endfor %}
 
-<br />
-{{ dic }} <br />
+<br/>
+{{ dic }}
+<br/>
 
 {% for key, value in dic.items %} {{ key }} : {{ value }} {% endfor %}
 
-<br />
+<br/>
 {{ dic.name }} {{ dic.age }} {{ dic.city }}
 
 <!-- Your Bootstrap Carousel and HTML continues from here -->

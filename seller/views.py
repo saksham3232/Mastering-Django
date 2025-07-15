@@ -10,7 +10,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 def index(request):
-    return render(request, 'seller/index.html')
+    context = {
+        'age': 25,
+        'array': [1, 2, 3, 4, 5],
+        'dic': {'name': 'Saksham', 'age': 22, 'city': 'Lucknow'}
+    }
+    return render(request, 'seller/index.html', context)
 
 
 class LoginViewUser(LoginView):
@@ -33,3 +38,9 @@ class RegisterViewSeller(LoginRequiredMixin, CreateView):
 class LogoutViewUser(LogoutView):
     # success_url = reverse_lazy('index')
     next_page = reverse_lazy('index')
+
+
+class RegisterView(CreateView):
+    template_name = 'seller/registerbaseuser.html'
+    form_class = RegistrationForm
+    success_url = reverse_lazy('index')

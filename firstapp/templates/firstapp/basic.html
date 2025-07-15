@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+{% load hosts %}
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8" />
@@ -28,7 +28,7 @@
                     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url "contact" %}">Contact Us</a>
+                    <a class="nav-link" href="{% host_url "contact" host 'www' %}">Contact Us</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -53,11 +53,10 @@
                 </button>
             <ul class="dropdown-menu dropdown-menu-left dropdown-menu-lg-right"
                 aria-labelledby="dropdownMenuButton">
-                <li><a class="dropdown-item" href="{% url 'signup'%}">Signup</a></li>
-                <li><a class="dropdown-item" href="{% url 'signupseller' %}">Sign Up for Seller</a></li>
-                <li><a class="dropdown-item" href="{% url 'login' %}">Login</a></li>
+                <li><a class="dropdown-item" href="{% host_url "signup" host 'www' %}">Signup</a></li>
+                <li><a class="dropdown-item" href="{% host_url "login" host 'www' %}">Login</a></li>
                 <li>
-                    <form method="post" action="{% url 'logout' %}">
+                    <form method="post" action="{% host_url "logout" host 'www' %}">
                         {% csrf_token %}
                         <button type="submit" class="dropdown-item">Logout</button>
                     </form>
