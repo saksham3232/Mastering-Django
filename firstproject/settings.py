@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-bqikk4=_pm=*yls0mzg7sc&lx(jr4ab+60*8q)ix+5d9td_k!6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'www.mauryashop.in', 'services.mauryashop.in']
 
 
 # Application definition
@@ -38,10 +38,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    'firstapp'
+    'firstapp',
+    'seller',
+    'django_hosts',
 ]
 
 MIDDLEWARE = [
+    "django_hosts.middleware.HostsRequestMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -49,9 +52,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_hosts.middleware.HostsResponseMiddleware"
 ]
 
 ROOT_URLCONF = "firstproject.urls"
+ROOT_HOSTCONF = 'firstproject.hosts'
+DEFAULT_HOST = 'www'
+PARENT_HOST = 'mauryashop.in'
+HOST_POST = '8000'
 
 TEMPLATES = [
     {

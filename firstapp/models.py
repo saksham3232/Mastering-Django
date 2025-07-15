@@ -31,9 +31,20 @@ from multiselectfield import MultiSelectField
 #     def __str__(self):
 #         return self.get_id_display()
 
+
+class LowerCaseEmailField(models.EmailField):
+    def to_python(self, value):
+        """Convert the value to lowercase before saving it to the database."""
+        value = super(LowerCaseEmailField, self).to_python(value)
+        if isinstance(value, str):
+            return value.lower()
+        return value
+
+
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     # username = None
-    email = models.EmailField(_('email address'), unique=True)
+    email = LowerCaseEmailField(_('email address'), unique=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
