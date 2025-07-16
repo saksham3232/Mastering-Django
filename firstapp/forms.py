@@ -47,10 +47,7 @@ class RegistrationFormSeller(UserCreationForm):
             'warehouse_location'
         ]
 
-
 class RegistrationForm(UserCreationForm):
-    gst = forms.CharField(max_length=10)
-    warehouse_location = forms.CharField(max_length=1000)
     class Meta:
         model = Seller
         fields = [
