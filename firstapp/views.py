@@ -19,7 +19,6 @@ from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 
-
 # Create your views here.
 # def index(request):
 #     age = 18
@@ -41,6 +40,15 @@ class Index(TemplateView):
         context = {'age': age, 'array': arr, 'dic': dic, 'context_old': context_old}
         return context
     
+
+def testsessions(request):
+    if request.session.get('test', False):
+        print(request.session['test'])
+    # request.session.set_expiry(1)
+    request.session['test'] = 'testing'
+    request.session['test2'] = 'testing2'
+    return render(request, 'firstapp/sessiontesting.html')
+
 
 def contactus(request):
     if request.method == "POST":
