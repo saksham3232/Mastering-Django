@@ -1,59 +1,171 @@
 {% extends 'firstapp/basic.html' %}
-{% load hosts %}
 {% load static %}
+{% load hosts %}
 {% load myfilters %}
+
 {% block title %}
+Cart
 {% endblock %}
+
 {% block css %}
 <style>
-  .main-area {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 0px;
-    background-color: #f8f9fa;
+  body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
-  .product-cards {
-    background-color: white;
-    padding: 10px;
+  .cart-container {
+    max-width: 1400px;
+    margin: 60px auto;
+    padding: 0 24px;
   }
 
-  .btn-primary {
-    margin: 10px;
+  .cart-header {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: #ffffff;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+  }
+
+  .cart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+  }
+
+  .cart-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .cart-card:hover {
+    transform: scale(1.03) rotateZ(0.3deg);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  }
+
+.cart-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain; /* Maintain aspect ratio without cropping */
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  background-color: white; /* Optional: to provide contrast behind transparent images */
+}
+
+  .cart-card h3 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    color: #ffffff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .cart-price, .cart-quantity {
+    font-size: 1.1rem;
+    margin: 8px 0;
+    color: #00ffd5;
+  }
+
+  .cart-form {
+    margin-top: 12px;
+  }
+
+  .cart-form input[type="text"] {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  margin-right: 10px;
+  width: 140px; /* Increased from 70px */
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #000000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+  .btn-card {
+    background: linear-gradient(135deg, #00c9ff, #92fe9d);
+    border: none;
+    padding: 10px 18px;
+    color: #0b0b0b;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-right: 8px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  .btn-card:hover {
+    background: linear-gradient(135deg, #ff6ec4, #7873f5);
+    color: white;
+    transform: scale(1.08);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+      transform: scale(1.03);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  .empty-cart {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #ccc;
+    margin-top: 60px;
   }
 </style>
 {% endblock %}
 
-{% block body%}
-<div class="main-area">
-  <div class="product-cards">
-    <h1 style="text-align:center;">CART</h1>
+{% block body %}
+<div class="cart-container">
+  <h1 class="cart-header">Your Cart</h1>
 
+  {% if cart %}
+  <div class="cart-grid">
     {% for i in cart %}
-    <div class="row featurette">
-      <div class="col-md-2">
-        <img src="/media/{{i.product.image}}" class="card-img-top" alt="...">
-      </div>
-      <div class="col-md-7">
-        <h2 class="featurette-heading">{{i.product.product_name}}</h2>
-        <p class="lead">Rs. {{i.product.price}}</p>
-        <p class="lead">Quantity- {{i.quantity}}</p>
-        <form method="POST" action="{% host_url 'updatecart' pk=i.product_in_cart_id host 'www' %}">{% csrf_token %}
-          <input type="text" id="id_quantity" name="quantity">
-          <button class="btn btn-primary" type="submit">Update Quantity</button>
-        </form>
-        <form method="POST" action="{% host_url 'deletefromcart' pk=i.product_in_cart_id host 'www' %}">{% csrf_token %}
-          <button class="btn btn-primary" type="submit">Delete</button>
-        </form>
-      </div>
+      <div class="cart-card">
+        <img src="/media/{{ i.product.image }}" alt="{{ i.product.product_name }}">
+        <h3>{{ i.product.product_name }}</h3>
+        <p class="cart-price">Price: ₹{{ i.product.price }}</p>
+        <p class="cart-quantity">Quantity: {{ i.quantity }}</p>
 
-    </div>
-    <hr>
-    {% empty %}
-    <h4>Empty Cart</h4>
+        <form class="cart-form" method="POST" action="{% host_url 'updatecart' pk=i.product_in_cart_id host 'www' %}">
+          {% csrf_token %}
+          <input type="text" id="id_quantity" name="quantity" placeholder="New Qty">
+          <button class="btn-card" type="submit">Update</button>
+        </form>
+
+        <form method="POST" action="{% host_url 'deletefromcart' pk=i.product_in_cart_id host 'www' %}">
+          {% csrf_token %}
+          <button class="btn-card" type="submit">Remove</button>
+        </form>
+      </div>
     {% endfor %}
-
   </div>
-
+  {% else %}
+    <p class="empty-cart">Your cart is empty!</p>
+  {% endif %}
 </div>
 {% endblock %}
