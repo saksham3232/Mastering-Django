@@ -1,39 +1,119 @@
 {% extends 'firstapp/basic.html' %}
 {% load static %}
 {% load myfilters %}
+
 {% block title %}
     Contact Form
 {% endblock %}
 
 {% block css %}
 <style>
-.errorlist{
-    color:red;
+  body {
+    background: linear-gradient(to right, #4e54c8, #8f94fb);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .container {
+    margin-top: 60px;
+    max-width: 500px; /* Reduced from 700px */
+    padding: 20px 25px; /* Reduced padding */
+    background: #fff;
+    border-radius: 15px; /* Slightly smaller corners */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Slightly lighter shadow */
+    transform: perspective(1000px) rotateX(2deg);
+    animation: floatIn 1.5s ease-out;
 }
+
+  @keyframes floatIn {
+    0% {
+      opacity: 0;
+      transform: perspective(1000px) translateY(100px) rotateX(10deg);
+    }
+    100% {
+      opacity: 1;
+      transform: perspective(1000px) translateY(0) rotateX(2deg);
+    }
+  }
+
+  .login-labels {
+    font-weight: 600;
+    margin-top: 20px;
+    color: #333;
+  }
+
+  .form-control {
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border: 2px solid #4e54c8;
+    border-radius: 10px;
+    padding: 12px 15px;
+    box-shadow: 2px 2px 10px rgba(78, 84, 200, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    border-color: #8f94fb;
+    box-shadow: 0 0 12px rgba(143, 148, 251, 0.5);
+    outline: none;
+    transform: scale(1.02);
+  }
+
+  .btn-primary {
+    background-color: #4e54c8;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(78, 84, 200, 0.3);
+  }
+
+  .btn-primary:hover {
+    background-color: #3b3fbb;
+    transform: scale(1.05);
+  }
+
+  .errorlist {
+    color: red;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+      margin-top: 60px;
+      transform: none;
+    }
+    .btn-primary {
+      width: 100%;
+    }
+  }
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container">
-<form method="POST">{% csrf_token %}
-{% comment %} {{form.as_p}} {% endcomment %}
-{{ form.non_field_error }}
+  <form method="POST">{% csrf_token %}
+    {{ form.non_field_error }}
+
     <label for="id_email" class="login-labels">Email Address*</label>
     {{ form.email.errors }}
-    {{ form.email|addclass:'form-control'|addplaceholder:'Email Address'}}
+    {{ form.email|addclass:'form-control'|addplaceholder:'Email Address' }}
 
     <label for="id_phone" class="login-labels">Phone No.*</label>
-    {{ form.phone.errors}}
-    {{ form.phone|addclass:'form-control'|addplaceholder:'Phone No.'}}
+    {{ form.phone.errors }}
+    {{ form.phone|addclass:'form-control'|addplaceholder:'Phone No.' }}
 
     <label for="id_name" class="login-labels">Name*</label>
     {{ form.name.errors }}
-    {{ form.name|addclass:'form-control'|addplaceholder:'Your Name'}}
+    {{ form.name|addclass:'form-control'|addplaceholder:'Your Name' }}
 
     <label for="id_query" class="login-labels">Query*</label>
     {{ form.query.errors }}
-    {{ form.query|addclass:'form-control'|addplaceholder:'Any Query'}}
-<button type="submit" class="btn btn-primary">Submit</button>
-</form>
+    {{ form.query|addclass:'form-control'|addplaceholder:'Any Query' }}
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 </div>
 {% endblock %}
