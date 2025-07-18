@@ -177,6 +177,7 @@ class Contact(models.Model):
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=15)
+    image = models.ImageField(upload_to='productimages', default=None, blank=True, null=True)
     price = models.FloatField()
 
     @classmethod

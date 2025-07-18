@@ -1,0 +1,171 @@
+{% extends 'firstapp/basic.html' %}
+{% load static %}
+{% load hosts %}
+
+{% block title %}
+Products
+{% endblock %}
+
+{% block css %}
+<style>
+  body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    color: white;
+  }
+
+  .product-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    margin: 60px auto;
+    max-width: 1400px;
+    padding: 0 24px;
+    perspective: 1000px;
+  }
+
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    width: 160%;
+    height: 160%;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.05), transparent 70%);
+    transform: rotate(25deg);
+    z-index: 0;
+  }
+
+  .product-card:hover {
+    transform: rotateY(5deg) rotateX(5deg) scale(1.02);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  }
+
+  .product-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    z-index: 1;
+  }
+
+  .product-card:hover img {
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  .product-card h3 {
+    font-size: 1.4rem;
+    color: #ffffff;
+    margin-top: 16px;
+    z-index: 1;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .product-price {
+    font-size: 1.2rem;
+    color: #00ffd5;
+    font-weight: 700;
+    margin: 12px 0;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-card {
+    background: linear-gradient(135deg, #00c9ff, #92fe9d);
+    border: none;
+    padding: 12px 22px;
+    color: #0b0b0b;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    z-index: 1;
+    text-align: center;
+    text-decoration: none;
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  .btn-card:hover {
+    background: linear-gradient(135deg, #ff6ec4, #7873f5);
+    color: white;
+    transform: scale(1.08) rotate(-1deg);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  }
+
+  /* CSS animation for the Add to Cart button */
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+      transform: scale(1.03);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  /* Responsive Enhancements */
+  @media (max-width: 1200px) {
+    .product-cards {
+      gap: 24px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .product-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .product-card {
+      padding: 1.2rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .product-cards {
+      grid-template-columns: 1fr;
+    }
+    .product-card {
+      padding: 1rem;
+    }
+    .product-card img {
+      height: 160px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="product-cards">
+  {% for i in product %}
+    <div class="product-card">
+      <img src="/media/{{ i.image }}" alt="{{ i.product_name }}">
+      <h3><a href="{% host_url 'productdetail' pk=i.pk host 'www' %}">{{ i.product_name }}</a></h3>
+      <p class="product-price">₹{{ i.price }}</p>
+      <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}">Add to Cart</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

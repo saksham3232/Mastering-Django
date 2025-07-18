@@ -4,12 +4,25 @@ from . import views
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
+from django.conf import settings
+from django.conf.urls.static import static
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', views.Index.as_view(), name='index'),
     path('contactus/', views.contactus2, name='contact'),
     path('contactusclass/', views.ContactUs.as_view(), name='contactclass'),
     path('testsessions/', views.testsessions, name="testsessions"),
+
+    path('listproducts/', views.ListProducts.as_view(), name='listproducts'),
+    #path('listproducts2/', views.listProducts, name='listproducts2'),
+
+    path('productdetail/<int:pk>/', views.ProductDetail.as_view(), name='productdetail'),
+    path('addtocart/<int:id>/', views.addToCart, name='addtocart'),
+    path('displaycart/', views.DisplayCart.as_view(), name='displaycart'),
+    path('updatecart/<int:pk>/', views.UpdateCart.as_view(), name='updatecart'),
+    path('deletefromcart/<int:pk>/', views.DeleteFromCart.as_view(), name='deletefromcart'),
 
     # Authentication Endpoints
     path('signup/', views.RegisterView.as_view(), name='signup'),
@@ -37,3 +50,9 @@ urlpatterns = [
     path('reset_password_complete/',auth_views.PasswordResetCompleteView.as_view(template_name = "firstapp/registration/password_reset_done.html"), 
     name="password_reset_complete"),   # 4
 ]
+
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,126 @@
+{% extends 'firstapp/basic.html' %}
+{% load hosts %}
+{% load static %}
+{% block title %}
+{{ product.product_name }}
+{% endblock %}
+
+{% block css %}
+<style>
+  body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .product-detail-container {
+    max-width: 1200px;
+    margin: 100px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 20px;
+  }
+
+  .product-image {
+    flex: 1 1 40%;
+  }
+
+  .product-image img {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .product-details {
+    flex: 1 1 50%;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .product-details h1 {
+    font-size: 2rem;
+    margin-bottom: 16px;
+  }
+
+  .price {
+    font-size: 1.6rem;
+    color: #00ffd5;
+    margin-bottom: 20px;
+  }
+
+  .product-details p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .btn-buy {
+    background: linear-gradient(135deg, #36d1dc, #5b86e5);
+    padding: 12px 24px;
+    font-size: 1rem;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-buy:hover {
+    background: linear-gradient(135deg, #ff6ec4, #7873f5);
+    transform: scale(1.05);
+  }
+
+  /* 🌐 Mobile Responsive */
+  @media (max-width: 768px) {
+    .product-detail-container {
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      gap: 24px;
+    }
+
+    .product-image,
+    .product-details {
+      width: 100%;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .product-details {
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: none;
+      padding: 20px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="product-detail-container">
+  <div class="product-image">
+    <img src="/media/{{ product.image }}" alt="{{ product.product_name }}">
+  </div>
+
+  <div class="product-details">
+    <h1>{{ product.product_name }}</h1>
+    <div class="price">₹{{ product.price }}</div>
+    <p>{{ product.desc }}</p>
+    {% comment %} <a class="btn-buy" href="{% url 'addtocart' id=product.product_id %}">Add to Cart</a> {% endcomment %}
+    <a class="btn-buy" href="{% host_url 'addtocart' id=product.product_id host 'www' %}">Add to Cart</a>
+  </div>
+</div>
+{% endblock %}
