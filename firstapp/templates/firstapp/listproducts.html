@@ -10,183 +10,246 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <style>
   body {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    background: linear-gradient(to right, #ece9e6, #ffffff);
+    color: #333;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+  }
+
+  .filter-bar {
+    max-width: 1400px;
+    margin: 80px auto 40px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px 40px;
+  }
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .search-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .search-group input,
+  .search-group button {
+    padding: 12px 18px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s ease;
+  }
+
+  .search-group input {
+    max-width: 220px;
+    background: #f9f9f9;
+  }
+
+  .search-group button {
+    background: linear-gradient(to right, #4e54c8, #8f94fb);
     color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+  }
+
+  .search-group button:hover {
+    background: linear-gradient(to right, #667eea, #764ba2);
+  }
+
+  /* Enhanced Dropdowns */
+  .filter-form select {
+    appearance: none;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #e0eafc, #cfdef3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    color: #333;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    min-width: 180px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 7L10 12L15 7' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px 16px;
+  }
+
+  .filter-form select:hover {
+    transform: rotateX(3deg) rotateY(3deg) scale(1.03);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15), inset 0 2px 6px rgba(255, 255, 255, 0.7);
+  }
+
+  .filter-form select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.3);
   }
 
   .product-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 32px;
-    margin: 60px auto;
+    gap: 30px;
     max-width: 1400px;
-    padding: 0 24px;
-    perspective: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
   }
 
   .product-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transform-style: preserve-3d;
-    transition: transform 0.5s ease, box-shadow 0.5s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .product-card::before {
-    content: '';
-    position: absolute;
-    top: -30%;
-    left: -30%;
-    width: 160%;
-    height: 160%;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 70%);
-    transform: rotate(25deg);
-    z-index: 0;
+    background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.4s;
+    text-align: center;
   }
 
   .product-card:hover {
-    transform: rotateY(5deg) rotateX(5deg) scale(1.02);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    transform: scale(1.03);
   }
 
   .product-card img {
     width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 14px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease;
-    z-index: 1;
-  }
-
-  .product-card:hover img {
-    transform: scale(1.05) rotate(-1deg);
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   }
 
   .product-card h3 {
     font-size: 1.4rem;
-    color: #ffffff;
-    margin-top: 16px;
-    z-index: 1;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    color: #4e54c8;
+    margin-bottom: 8px;
   }
 
   .product-price {
     font-size: 1.2rem;
-    color: #00ffd5;
-    font-weight: 700;
-    margin: 12px 0;
-    z-index: 1;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: #28a745;
+    font-weight: bold;
   }
 
   .btn-card {
-    background: linear-gradient(135deg, #00c9ff, #92fe9d);
-    border: none;
-    padding: 12px 22px;
-    color: #0b0b0b;
+    display: inline-block;
+    margin-top: 16px;
+    background: linear-gradient(to right, #4e54c8, #8f94fb);
+    padding: 10px 20px;
     border-radius: 10px;
-    font-size: 1rem;
     font-weight: bold;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    z-index: 1;
-    text-align: center;
+    color: white;
     text-decoration: none;
-    animation: pulse 2s infinite ease-in-out;
+    transition: 0.3s ease;
   }
 
   .btn-card:hover {
-    background: linear-gradient(135deg, #ff6ec4, #7873f5);
-    color: white;
-    transform: scale(1.08) rotate(-1deg);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(to right, #667eea, #764ba2);
+    transform: scale(1.05);
   }
 
-  @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 0px rgba(255, 255, 255, 0.5);
-    }
-    50% {
-      transform: scale(1.03);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-    }
+  /* Centered Pagination */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin: 40px auto;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
-  @media (max-width: 1200px) {
-    .product-cards {
-      gap: 24px;
-    }
+  .pagination .page-link {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #fff;
+    color: #333;
+    font-weight: 500;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: transform 0.3s ease, background 0.3s ease;
+  }
+
+  .pagination .page-link:hover {
+    background: #4e54c8;
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  .pagination .active .page-link {
+    background: #28a745;
+    color: #fff;
+    font-weight: bold;
+    border-color: #28a745;
   }
 
   @media (max-width: 768px) {
-    .product-cards {
-      grid-template-columns: repeat(2, 1fr);
+    .filter-form {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 20px;
     }
 
-    .product-card {
-      padding: 1.2rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .product-cards {
-      grid-template-columns: 1fr;
+    .search-group {
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
     }
 
-    .product-card {
-      padding: 1rem;
+    .search-group input,
+    .search-group button,
+    .filter-form select {
+      width: 100%;
+      font-size: 1.05rem;
     }
 
-    .product-card img {
-      height: 160px;
+    .filter-bar {
+      padding: 25px 20px;
+      margin: 40px 10px;
     }
   }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="product-cards">
+<!-- Filter & Search Bar -->
+<div class="filter-bar">
+  <form method="GET" action="/listproducts/" class="filter-form">
+    <div class="search-group">
+      <input name="search" id="search" type="search" placeholder="Search" aria-label="Search" value="{{ request.GET.search }}">
+      <button type="submit">Search</button>
+    </div>
 
-  <!-- Search and Filters -->
-  <div class="utility">
-    <form method="GET" action="/listproducts/" class="d-flex">
-      <input class="form-control me-2" name="search" id="search" type="search" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success" type="submit">Search</button>
-    </form>
-
-    <select name="price" id="price-list" onchange="location = finalurl2();" style="margin-left: auto;">
+    <select name="price" id="price-list" onchange="location = finalurl2();">
       <option value="" id="price-placeholder" disabled selected hidden>Price</option>
-      <option id="pr500" value="500">Less than 500</option>
-      <option id="pr1000" value="1000">Less than 1000</option>
-      <option id="pr2000" value="2000">Less than 2000</option>
-      <option id="pr10000" value="10000">Less than 10000</option>
+      <option id="pr500" value="500">Less than ₹500</option>
+      <option id="pr1000" value="1000">Less than ₹1000</option>
+      <option id="pr2000" value="2000">Less than ₹2000</option>
+      <option id="pr10000" value="10000">Less than ₹10000</option>
     </select>
 
-    <select name="sort" id="sort-list" onchange="location = finalurl();" style="margin-left: auto;">
+    <select name="sort" id="sort-list" onchange="location = finalurl();">
       <option value="" id="placeholder" disabled selected hidden>Sort</option>
       <option id="price" value="price">Price: Low To High</option>
       <option id="-price" value="-price">Price: High To Low</option>
       <option id="product_name" value="product_name">Product Name</option>
       <option id="-date_added" value="-date_added">What's New</option>
     </select>
-  </div>
+  </form>
+</div>
 
-  <!-- Product Cards -->
+<!-- Product Cards -->
+<div class="product-cards">
   {% for i in product %}
   <div class="product-card">
     <img src="/media/{{ i.image }}" alt="{{ i.product_name }}">
@@ -196,56 +259,35 @@
   </div>
   {% endfor %}
 </div>
-<br>
 
 <!-- Pagination -->
 {% if is_paginated %}
 <nav class="pagination">
-  <ul class="pagination">
+  <ul class="pagination justify-content-center">
     {% if page_obj.has_previous %}
     <li class="page-item">
-      <a class="page-link"
-         href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">
-         Previous
-      </a>
+      <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">Previous</a>
     </li>
     {% endif %}
 
     {% for i in paginator.page_range %}
-      {% if i == page_obj.number %}
-      <li class="page-item active" aria-current="page">
-        <a class="page-link"
-           href="?page={{ i }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">
-           {{ i }}
-        </a>
-      </li>
-      {% else %}
-      <li class="page-item">
-        <a class="page-link"
-           href="?page={{ i }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">
-           {{ i }}
-        </a>
-      </li>
-      {% endif %}
+    <li class="page-item {% if i == page_obj.number %}active{% endif %}">
+      <a class="page-link" href="?page={{ i }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">{{ i }}</a>
+    </li>
     {% endfor %}
 
     {% if page_obj.has_next %}
     <li class="page-item">
-      <a class="page-link"
-         href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">
-         Next
-      </a>
+      <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.price %}&price={{ request.GET.price }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}">Next</a>
     </li>
     {% endif %}
   </ul>
 </nav>
 {% endif %}
-
 {% endblock %}
 
 {% block js %}
 <script>
-
   function get(name) {
     if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search)) {
       return decodeURIComponent(name[1]);
@@ -253,10 +295,10 @@
   }
 
   if(get('ordering'))
-  document.getElementById('placeholder').innerHTML = "Sort: " + document.getElementById(get('ordering')).innerHTML;
+    document.getElementById('placeholder').innerHTML = "Sort: " + document.getElementById(get('ordering')).innerHTML;
 
   if(get('price'))
-  document.getElementById('price-placeholder').innerHTML = "Price: " + document.getElementById('pr'+get('price')).innerHTML;
+    document.getElementById('price-placeholder').innerHTML = "Price: " + document.getElementById('pr'+get('price')).innerHTML;
 
   function finalurl() {
     var url = new URL(window.location.href);
@@ -271,22 +313,18 @@
     var search_params = url.searchParams;
     search_params.set('price', document.getElementById("price-list").value);
     url.search = search_params.toString();
-    var new_url = url.toString();
-    return new_url
+    return url.toString();
   }
-
 </script>
 
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
-  // for giving suggestions in search box by calling an API
   $(function () {
     $("#search").autocomplete({
-      source: '{% host_url 'suggestionapi' host 'www' %}',
+      source: '{% host_url "suggestionapi" host "www" %}',
       minLength: 2
     });
   });
 </script>
-
 {% endblock %}
