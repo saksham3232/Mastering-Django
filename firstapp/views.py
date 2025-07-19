@@ -1,4 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
+from django.http import JsonResponse
 from django.views.generic import TemplateView, FormView, CreateView, ListView, DeleteView, DetailView, UpdateView
 from django.core.exceptions import ValidationError
 from .forms import ContactUsForm, RegistrationForm, RegistrationFormSeller2, CartForm
@@ -213,11 +214,63 @@ class ListProducts(ListView):
     model = Product
     template_name = 'firstapp/listproducts.html'
     context_object_name = 'product'
+    paginate_by = 2
 
 
-# def listProducts(request):
-#     product = Product.objects.all()
-#     return render(request, 'firstapp/listproducts.html', {'product': product})
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
+PRODUCTS_PER_PAGE = 2
+
+def listProducts(request):
+    ordering = request.GET.get('ordering', "")
+    search = request.GET.get('search', "")
+    price = request.GET.get('price', "")
+
+    product = Product.objects.all()
+
+    if search:
+        product = product.filter(Q(product_name__icontains=search) | Q(brand__icontains=search))
+
+    if ordering:
+        product = product.order_by(ordering)
+
+    if price:
+        product = product.filter(price__lt=price)
+
+    # Pagination AFTER filtering and ordering
+    page = request.GET.get('page', 1)
+    product_paginator = Paginator(product, PRODUCTS_PER_PAGE)
+    try:
+        product = product_paginator.page(page)
+    except EmptyPage:
+        product = product_paginator.page(product_paginator.num_pages)
+    except:
+        product = product_paginator.page(1)
+
+    return render(request, 'firstapp/listproducts.html', {
+        'product': product,
+        'page_obj': product,
+        'is_paginated': True,
+        'paginator': product_paginator
+    })
+
+
+def suggestionApi(request):
+    if 'term' in request.GET:
+        search = request.GET.get('term')
+        qs = Product.objects.filter(Q(product_name__icontains=search))[0:10]
+        titles = list()
+        for product in qs:
+            titles.append(product.product_name)
+        if len(qs) < 10:
+            length = 10 - len(qs)
+            qs2 = Product.objects.filter(Q(brand__icontains=search))[0:length]
+            for product in qs2:
+                titles.append(product.brand)
+        return JsonResponse(titles, safe=False, encoder=DjangoJSONEncoder)
+
 
 
 class ProductDetail(DetailView):

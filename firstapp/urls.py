@@ -15,8 +15,8 @@ urlpatterns = [
     path('contactusclass/', views.ContactUs.as_view(), name='contactclass'),
     path('testsessions/', views.testsessions, name="testsessions"),
 
-    path('listproducts/', views.ListProducts.as_view(), name='listproducts'),
-    #path('listproducts2/', views.listProducts, name='listproducts2'),
+#     path('listproducts/', views.ListProducts.as_view(), name='listproducts'),
+    path('listproducts/', views.listProducts, name='listproducts'),
 
     path('productdetail/<int:pk>/', views.ProductDetail.as_view(), name='productdetail'),
     path('addtocart/<int:id>/', views.addToCart, name='addtocart'),
@@ -29,6 +29,8 @@ urlpatterns = [
     path('login/', views.LoginViewUser.as_view(), name='login'),
     path('logout/', views.LogoutViewUser.as_view(), name='logout'),
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+
+    path('api/suggestionapi/', views.suggestionApi, name="suggestionapi"),
 
     # change password
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='firstapp/registration/password_change_done.html'),
