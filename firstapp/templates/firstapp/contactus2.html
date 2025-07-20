@@ -11,80 +11,82 @@
   body {
     background: linear-gradient(to right, #4e54c8, #8f94fb);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
   }
 
   .container {
-    margin-top: 60px;
-    max-width: 500px; /* Reduced from 700px */
-    padding: 20px 25px; /* Reduced padding */
+    margin: 20px auto;
+    max-width: 400px;
+    padding: 10px 15px;
     background: #fff;
-    border-radius: 15px; /* Slightly smaller corners */
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Slightly lighter shadow */
-    transform: perspective(1000px) rotateX(2deg);
-    animation: floatIn 1.5s ease-out;
-}
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transform: perspective(700px) rotateX(1deg);
+    animation: floatIn 0.8s ease-out;
+  }
 
   @keyframes floatIn {
     0% {
       opacity: 0;
-      transform: perspective(1000px) translateY(100px) rotateX(10deg);
+      transform: perspective(700px) translateY(60px) rotateX(6deg);
     }
     100% {
       opacity: 1;
-      transform: perspective(1000px) translateY(0) rotateX(2deg);
+      transform: perspective(700px) translateY(0) rotateX(1deg);
     }
   }
 
   .login-labels {
-    font-weight: 600;
-    margin-top: 20px;
+    font-weight: 500;
+    margin-top: 8px;
     color: #333;
+    font-size: 0.85rem;
   }
 
   .form-control {
-    margin-top: 5px;
-    margin-bottom: 20px;
-    border: 2px solid #4e54c8;
-    border-radius: 10px;
-    padding: 12px 15px;
-    box-shadow: 2px 2px 10px rgba(78, 84, 200, 0.1);
-    transition: all 0.3s ease;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    border: 1.2px solid #4e54c8;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.85rem;
   }
 
   .form-control:focus {
     border-color: #8f94fb;
-    box-shadow: 0 0 12px rgba(143, 148, 251, 0.5);
+    box-shadow: 0 0 6px rgba(143, 148, 251, 0.4);
     outline: none;
-    transform: scale(1.02);
   }
 
   .btn-primary {
     background-color: #4e54c8;
     border: none;
-    padding: 12px 25px;
-    font-size: 1rem;
-    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 6px;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(78, 84, 200, 0.3);
+    box-shadow: 0 3px 10px rgba(78, 84, 200, 0.2);
+    margin-top: 5px;
   }
 
   .btn-primary:hover {
     background-color: #3b3fbb;
-    transform: scale(1.05);
+    transform: scale(1.02);
   }
 
   .errorlist {
     color: red;
-    font-size: 0.9rem;
-    margin-bottom: 10px;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
   }
 
   @media (max-width: 768px) {
     .container {
-      padding: 20px;
-      margin-top: 60px;
-      transform: none;
+      margin: 15px auto;
+      padding: 10px;
     }
+
     .btn-primary {
       width: 100%;
     }

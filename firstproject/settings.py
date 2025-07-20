@@ -188,3 +188,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Razorpay Settings
 RAZORPAY_KEY_ID = 'rzp_test_1k5VRA8tapTW9V'
 RAZORPAY_KEY_SECRET = 'FwfUrSa4MKhbwH8tAlYZEF8O'
+
+
+USE_TZ = True
+TIME_ZONE = 'Asia/Kolkata'

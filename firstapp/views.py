@@ -84,26 +84,68 @@ def contactus2(request):
 
 
 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils import timezone
+from django.utils.timezone import localtime
+
 class ContactUs(FormView):
     form_class = ContactUsForm
     template_name = 'firstapp/contactus2.html'
     success_url = reverse_lazy('index')
 
     def form_valid(self, form):
-        if len(form.cleaned_data.get('query')) > 10:
-            form.add_error('query', 'Query length is not right')
+        query = form.cleaned_data.get('query')
+
+        # ✅ Check if query length is less than 10
+        if len(query) < 10:
+            form.add_error('query', 'Query must be at least 10 characters long')
             return render(self.request, 'firstapp/contactus2.html', {'form': form})
+
+        # ✅ Save to DB
         form.save()
-        response = super().form_valid(form)
-        return response
-    
+
+        # ✅ Prepare email
+        subject = '📩 New Contact Form Submission'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = ['sakshammaurya678@gmail.com']
+        context = {
+            'name': form.cleaned_data.get('name'),
+            'email': form.cleaned_data.get('email'),
+            'phone': form.cleaned_data.get('phone'),
+            'query': query,
+            'timestamp': localtime(timezone.now()).strftime('%d %B %Y, %I:%M %p'),
+        }
+
+        # ✅ Load HTML template for email
+        html_content = render_to_string('firstapp/email_template.html', context)
+        text_content = f"""
+        New contact form submission:
+
+        Name: {context['name']}
+        Email: {context['email']}
+        Phone: {context['phone']}
+        Query: {context['query']}
+        """
+
+        # ✅ Send email
+        email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+        email.attach_alternative(html_content, "text/html")
+        email.send(fail_silently=False)
+
+        return super().form_valid(form)
+
 
     def form_invalid(self, form):
-        if len(form.cleaned_data.get('query')) > 10:
-            form.add_error('query', 'Query length is not right')
-            return render(self.request, 'firstapp/contactus2.html', {'form': form})
-        response = super().form_invalid(form)
-        return response
+        query = form.cleaned_data.get('query')
+        
+        # ✅ Correct condition: show error if query is too short
+        if query and len(query) < 10:
+            form.add_error('query', 'Query must be at least 10 characters long')
+        
+        return render(self.request, 'firstapp/contactus2.html', {'form': form})
+
 
 
 
@@ -429,13 +471,11 @@ def handlerequest(request):
                 'razorpay_signature': signature
             }
 
-            # Fetch order from DB
             try:
                 order_db = Order.objects.get(razorpay_order_id=order_id)
             except Order.DoesNotExist:
                 return HttpResponse('Order not found in the database.')
 
-            # Save Razorpay IDs
             order_db.razorpay_payment_id = payment_id
             order_db.razorpay_signature = signature
             order_db.save()
@@ -445,12 +485,16 @@ def handlerequest(request):
                 razorpay_client.utility.verify_payment_signature(params_dict)
 
                 # Capture the payment
-                amount = int(order_db.total_amount * 100)  # Amount in paisa
+                amount = int(order_db.total_amount * 100)
                 razorpay_client.payment.capture(payment_id, amount)
 
-                # Payment successful
+                # ✅ Payment successful
                 order_db.payment_status = 1
                 order_db.save()
+
+                # ✅ EMPTY THE CART
+                cart = Cart.objects.get(user=order_db.user)
+                ProductInCart.objects.filter(cart=cart).delete()
 
                 return render(request, 'firstapp/payment/paymentsuccess.html')
 
