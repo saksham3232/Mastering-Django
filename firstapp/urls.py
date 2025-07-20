@@ -32,6 +32,12 @@ urlpatterns = [
 
     path('api/suggestionapi/', views.suggestionApi, name="suggestionapi"),
 
+
+    # Payment Endpoints
+    path('payment/', views.payment, name='payment'),
+    path('handlerequest/', views.handlerequest, name='handlerequest'),
+
+
     # change password
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='firstapp/registration/password_change_done.html'),
          name='password_change_done'),

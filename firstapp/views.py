@@ -350,3 +350,117 @@ class DeleteFromCart(LoginRequiredMixin, DeleteView):
         else:
             messages.error(request, 'Error occurred while removing the item from cart. Please try again.')
             return redirect(reverse_lazy('displaycart'))
+
+
+
+# Adding payment gateway
+import razorpay
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+from .models import Order, ProductInOrder, Cart
+
+
+@login_required
+def payment(request):
+    if request.method == 'POST':
+        try:
+            cart = Cart.objects.get(user = request.user)
+            products_in_cart = ProductInCart.objects.filter(cart=cart)
+            final_price = 0
+            if len(products_in_cart) > 0:
+                order = Order.objects.create(user = request.user, total_amount = 0)
+                for product in products_in_cart:
+                    product_in_order = ProductInOrder.objects.create(
+                        order = order,
+                        product = product.product,
+                        quantity = product.quantity,
+                        price = product.product.price
+                    )
+                    final_price = final_price + (product.product.price * product.quantity)
+            else:
+                return HttpResponse('No products in cart to proceed with payment.')
+        except:
+            return HttpResponse('Error occurred while processing the payment. Please try again.')
+
+        order.total_amount = final_price
+        order.save()
+
+        order_currency = 'INR'
+        
+        callback_url = 'http://' + str(get_current_site(request)) + "/handlerequest/"
+        print(callback_url)
+        notes = {'order-type': 'basic order from the website', 'key': 'value'}
+        razorpay_order = razorpay_client.order.create(dict(
+            amount=final_price * 100,
+            currency=order_currency,
+            notes=notes,
+            receipt=order.order_id,
+            payment_capture='0'
+        ))
+        print(razorpay_order['id'])
+        order.razorpay_order_id = razorpay_order['id']
+        order.save()
+
+        return render(request, 'firstapp/payment/paymentsummaryrazorpay.html', {'order':order, 'order_id': razorpay_order['id'], 'orderId':order.order_id, 'final_price':final_price, 'razorpay_merchant_id':settings.RAZORPAY_KEY_ID, 'callback_url':callback_url})
+    else:
+        return HttpResponse('505 Not Found')
+
+from razorpay.errors import SignatureVerificationError
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from django.http import HttpResponse
+from .models import Order
+
+@csrf_exempt
+def handlerequest(request):
+    if request.method == 'POST':
+        try:
+            # Get POST data
+            payment_id = request.POST.get('razorpay_payment_id', '')
+            order_id = request.POST.get('razorpay_order_id', '')
+            signature = request.POST.get('razorpay_signature', '')
+
+            if not payment_id or not order_id or not signature:
+                return HttpResponse("Missing payment details.")
+
+            params_dict = {
+                'razorpay_order_id': order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            }
+
+            # Fetch order from DB
+            try:
+                order_db = Order.objects.get(razorpay_order_id=order_id)
+            except Order.DoesNotExist:
+                return HttpResponse('Order not found in the database.')
+
+            # Save Razorpay IDs
+            order_db.razorpay_payment_id = payment_id
+            order_db.razorpay_signature = signature
+            order_db.save()
+
+            try:
+                # Razorpay signature verification
+                razorpay_client.utility.verify_payment_signature(params_dict)
+
+                # Capture the payment
+                amount = int(order_db.total_amount * 100)  # Amount in paisa
+                razorpay_client.payment.capture(payment_id, amount)
+
+                # Payment successful
+                order_db.payment_status = 1
+                order_db.save()
+
+                return render(request, 'firstapp/payment/paymentsuccess.html')
+
+            except SignatureVerificationError:
+                order_db.payment_status = 2
+                order_db.save()
+                return render(request, 'firstapp/payment/paymentfailed.html')
+
+        except Exception as e:
+            print("🔴 Unexpected Error in payment:", e)
+            return HttpResponse('Error occurred while processing the payment. Please try again.')
+
+    return HttpResponse('Invalid request method.')

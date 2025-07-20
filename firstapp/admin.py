@@ -3,8 +3,8 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 
-from .models import Product, Cart, ProductInCart, Order, Deal, Customer, Seller, Contact
-# Register your models here.
+from .models import Product, Cart, ProductInCart, Order, Deal, Customer, Seller, Contact, ProductInOrder
+# Register your models here,
 
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
@@ -120,16 +120,28 @@ class CartAdmin(admin.ModelAdmin):
     search_fields = ['user__username'] # with direct foreign key no error but not shown in search, with function error
 
 
-class DealAdmin(admin.ModelAdmin):
-    inlines = [
-        DealInline
-    ]
-    exclude = ('user',)
+class ProductInOrderInline(admin.TabularInline):
+    model = ProductInOrder
+
+
+@admin.register(Order)
+class CartAdmin(admin.ModelAdmin):
+    model = Cart
+    inlines = (
+        ProductInOrderInline,
+    )
+
+
+# class DealAdmin(admin.ModelAdmin):
+#     inlines = [
+#         DealInline
+#     ]
+#     exclude = ('user',)
 
 
 admin.site.register(Product)
 admin.site.register(ProductInCart)
-admin.site.register(Order)
+# admin.site.register(Order)
 admin.site.register(Deal)#, DealAdmin)
 # admin.site.register(UserType)
 admin.site.register(Customer)
@@ -155,3 +167,5 @@ class SessionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Session, SessionAdmin)
+
+admin.site.register(ProductInOrder)
