@@ -1,476 +1,178 @@
 {% extends 'seller/basic.html' %}
 {% load static %}
-{% block title %}
-Welcome
-{% endblock %}
+
+{% block title %}Welcome{% endblock %}
 
 {% block css %}
-<!-- You can include custom CSS here -->
 <style>
-  .bd-placeholder-img {
-    font-size: 1.125rem;
-    text-anchor: middle;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  @media (min-width: 768px) {
-    .bd-placeholder-img-lg {
-      font-size: 3.5rem;
-    }
-  }
-  /* GLOBAL STYLES
--------------------------------------------------- */
-  /* Padding below the footer and lighter body text */
-
   body {
     padding-bottom: 3rem;
-    color: #5a5a5a;
+    background: linear-gradient(to right, #ece9e6, #ffffff);
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
   }
 
-  /* CUSTOMIZE THE CAROUSEL
--------------------------------------------------- */
-
-  /* Carousel base class */
-  .carousel {
-    margin-bottom: 4rem;
-  }
-  /* Since positioning the image, we need to help out the caption */
-  .carousel-caption {
-    bottom: 3rem;
-    z-index: 10;
-  }
-
-  /* Declare heights because of positioning of img element */
-  .carousel-item {
-    height: 32rem;
-  }
-  .carousel-item > img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    min-width: 100%;
-    height: 32rem;
-  }
-
-  /* MARKETING CONTENT
--------------------------------------------------- */
-
-  /* Center align the text within the three columns below the carousel */
-  .marketing .col-lg-4 {
-    margin-bottom: 1.5rem;
+  .hero {
+    background: linear-gradient(135deg, #4e54c8, #8f94fb);
+    color: white;
+    padding: 80px 20px;
     text-align: center;
-  }
-  .marketing h2 {
-    font-weight: 400;
-  }
-  .marketing .col-lg-4 p {
-    margin-right: 0.75rem;
-    margin-left: 0.75rem;
+    perspective: 1000px;
   }
 
-  /* Featurettes
-------------------------- */
-
-  .featurette-divider {
-    margin: 5rem 0; /* Space out the Bootstrap <hr> more */
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    transform: rotateY(10deg);
+    transition: transform 0.5s ease;
   }
 
-  /* Thin out the marketing headings */
-  .featurette-heading {
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.05rem;
+  .hero h1:hover {
+    transform: rotateY(0deg) scale(1.05);
   }
 
-  /* RESPONSIVE CSS
--------------------------------------------------- */
+  .hero p {
+    font-size: 1.25rem;
+    margin-top: 10px;
+    transform: translateZ(50px);
+  }
 
-  @media (min-width: 40em) {
-    /* Bump up size of carousel content */
-    .carousel-caption p {
-      margin-bottom: 1.25rem;
-      font-size: 1.25rem;
-      line-height: 1.4;
+  .about-section {
+    background-color: white;
+    padding: 60px 20px;
+    margin: 40px auto 60px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    max-width: 1200px;
+  }
+
+  .about-section:hover {
+    transform: scale(1.01);
+  }
+
+  .about-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #4e54c8;
+  }
+
+  .about-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  .projects-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    perspective: 1200px;
+    margin-top: 30px;
+  }
+
+  .project-card {
+    width: 280px;
+    background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    padding: 20px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+
+  .project-card:hover {
+    transform: rotateY(10deg) rotateX(5deg) scale(1.05);
+  }
+
+  .project-card h3 {
+    color: #4e54c8;
+    margin-bottom: 10px;
+  }
+
+  .project-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.2rem;
     }
 
-    .featurette-heading {
-      font-size: 50px;
+    .hero p, .about-section p {
+      font-size: 1rem;
+    }
+
+    .about-section {
+      padding: 40px 15px;
     }
   }
 
-  @media (min-width: 62em) {
-    .featurette-heading {
-      margin-top: 7rem;
-    }
+  footer {
+    padding: 40px 20px;
+    background-color: #222;
+    color: #aaa;
+    text-align: center;
+    position: relative;
+    clear: both;
   }
 </style>
 {% endblock %}
 
 {% block body %}
-Hello World!
-<br/>
-{{ age }}
-<br/>
-{{ array }}
-<br/>
+<div class="hero">
+  <h1>Welcome to MauryaShop – Seller Portal</h1>
+  <p>Managed by Saksham Maurya – developer, innovator, and problem-solver.</p>
+</div>
 
-{% for i in array %} {{ i }} {% endfor %}
+<div class="container about-section">
+  <h2>About the Seller</h2>
+  <p>This portal is designed for managing product listings, tracking orders, and analyzing performance metrics for sellers on MauryaShop. It’s built with Django, Bootstrap, and a custom responsive design.</p>
 
-<br/>
-{{ dic }}
-<br/>
+  <h2>Seller Features</h2>
+  <p><strong>Product Management:</strong> Add, update, or remove product listings effortlessly.<br>
+     <strong>Order Tracking:</strong> Stay updated with real-time order statuses.<br>
+     <strong>Analytics:</strong> View reports and metrics for performance optimization.</p>
 
-{% for key, value in dic.items %} {{ key }} : {{ value }} {% endfor %}
+  <h2>Technologies Used</h2>
+  <p><strong>Frontend:</strong> HTML, CSS, Bootstrap<br>
+     <strong>Backend:</strong> Python, Django<br>
+     <strong>Database:</strong> SQLite (development)<br>
+     <strong>Tools:</strong> Git, GitHub, Django Admin</p>
 
-<br/>
-{{ dic.name }} {{ dic.age }} {{ dic.city }}
-
-<!-- Your Bootstrap Carousel and HTML continues from here -->
-<main role="main">
-  <div id="myCarousel" class="carousel slide" data-ride="carousel">
-    <ol class="carousel-indicators">
-      <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-      <li data-target="#myCarousel" data-slide-to="1"></li>
-      <li data-target="#myCarousel" data-slide-to="2"></li>
-    </ol>
-    <div class="carousel-inner">
-      <div class="carousel-item active">
-        <svg
-          class="bd-placeholder-img"
-          width="100%"
-          height="100%"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#777" />
-        </svg>
-        <div class="container">
-          <div class="carousel-caption text-left">
-            <h1>Example headline.</h1>
-            <p>
-              Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec
-              id elit non mi porta gravida at eget metus. Nullam id dolor id
-              nibh ultricies vehicula ut id elit.
-            </p>
-            <p>
-              <a class="btn btn-lg btn-primary" href="#" role="button"
-                >Sign up today</a
-              >
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="carousel-item">
-        <svg
-          class="bd-placeholder-img"
-          width="100%"
-          height="100%"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#777" />
-        </svg>
-        <div class="container">
-          <div class="carousel-caption">
-            <h1>Another example headline.</h1>
-            <p>
-              Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec
-              id elit non mi porta gravida at eget metus. Nullam id dolor id
-              nibh ultricies vehicula ut id elit.
-            </p>
-            <p>
-              <a class="btn btn-lg btn-primary" href="#" role="button"
-                >Learn more</a
-              >
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="carousel-item">
-        <svg
-          class="bd-placeholder-img"
-          width="100%"
-          height="100%"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-        >
-          <rect width="100%" height="100%" fill="#777" />
-        </svg>
-        <div class="container">
-          <div class="carousel-caption text-right">
-            <h1>One more for good measure.</h1>
-            <p>
-              Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec
-              id elit non mi porta gravida at eget metus. Nullam id dolor id
-              nibh ultricies vehicula ut id elit.
-            </p>
-            <p>
-              <a class="btn btn-lg btn-primary" href="#" role="button"
-                >Browse gallery</a
-              >
-            </p>
-          </div>
-        </div>
-      </div>
+  {% comment %} <h2>Seller Dashboard Projects</h2>
+  <div class="projects-wrapper">
+    <div class="project-card">
+      <h3>Inventory Tracker</h3>
+      <p>Track product stock levels and receive low-stock alerts automatically.</p>
     </div>
-    <a
-      class="carousel-control-prev"
-      href="#myCarousel"
-      role="button"
-      data-slide="prev"
-    >
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="sr-only">Previous</span>
-    </a>
-    <a
-      class="carousel-control-next"
-      href="#myCarousel"
-      role="button"
-      data-slide="next"
-    >
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="sr-only">Next</span>
-    </a>
-  </div>
-
-  <!-- Marketing messaging and featurettes
-  ================================================== -->
-  <!-- Wrap the rest of the page in another container to center all the content. -->
-
-  <div class="container marketing">
-    <!-- Three columns of text below the carousel -->
-    <div class="row">
-      <div class="col-lg-4">
-        <svg
-          class="bd-placeholder-img rounded-circle"
-          width="140"
-          height="140"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-          aria-label="Placeholder: 140x140"
-        >
-          <title>Placeholder</title>
-          <rect width="100%" height="100%" fill="#777" />
-          <text x="50%" y="50%" fill="#777" dy=".3em">140x140</text>
-        </svg>
-        <h2>Heading</h2>
-        <p>
-          Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.
-          Nullam id dolor id nibh ultricies vehicula ut id elit. Morbi leo
-          risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo
-          cursus magna.
-        </p>
-        <p>
-          <a class="btn btn-secondary" href="#" role="button"
-            >View details &raquo;</a
-          >
-        </p>
-      </div>
-      <!-- /.col-lg-4 -->
-      <div class="col-lg-4">
-        <svg
-          class="bd-placeholder-img rounded-circle"
-          width="140"
-          height="140"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-          aria-label="Placeholder: 140x140"
-        >
-          <title>Placeholder</title>
-          <rect width="100%" height="100%" fill="#777" />
-          <text x="50%" y="50%" fill="#777" dy=".3em">140x140</text>
-        </svg>
-        <h2>Heading</h2>
-        <p>
-          Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget
-          lacinia odio sem nec elit. Cras mattis consectetur purus sit amet
-          fermentum. Fusce dapibus, tellus ac cursus commodo, tortor mauris
-          condimentum nibh.
-        </p>
-        <p>
-          <a class="btn btn-secondary" href="#" role="button"
-            >View details &raquo;</a
-          >
-        </p>
-      </div>
-      <!-- /.col-lg-4 -->
-      <div class="col-lg-4">
-        <svg
-          class="bd-placeholder-img rounded-circle"
-          width="140"
-          height="140"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-          aria-label="Placeholder: 140x140"
-        >
-          <title>Placeholder</title>
-          <rect width="100%" height="100%" fill="#777" />
-          <text x="50%" y="50%" fill="#777" dy=".3em">140x140</text>
-        </svg>
-        <h2>Heading</h2>
-        <p>
-          Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas
-          eget quam. Vestibulum id ligula porta felis euismod semper. Fusce
-          dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut
-          fermentum massa justo sit amet risus.
-        </p>
-        <p>
-          <a class="btn btn-secondary" href="#" role="button"
-            >View details &raquo;</a
-          >
-        </p>
-      </div>
-      <!-- /.col-lg-4 -->
+    <div class="project-card">
+      <h3>Order Insights</h3>
+      <p>Analyze your most sold products and order trends with graphs and reports.</p>
     </div>
-    <!-- /.row -->
-
-    <!-- START THE FEATURETTES -->
-
-    <hr class="featurette-divider" />
-
-    <div class="row featurette">
-      <div class="col-md-7">
-        <h2 class="featurette-heading">
-          First featurette heading.
-          <span class="text-muted">It’ll blow your mind.</span>
-        </h2>
-        <p class="lead">
-          Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id
-          ligula porta felis euismod semper. Praesent commodo cursus magna, vel
-          scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.
-        </p>
-      </div>
-      <div class="col-md-5">
-        <svg
-          class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto"
-          width="500"
-          height="500"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-          aria-label="Placeholder: 500x500"
-        >
-          <title>Placeholder</title>
-          <rect width="100%" height="100%" fill="#eee" />
-          <text x="50%" y="50%" fill="#aaa" dy=".3em">500x500</text>
-        </svg>
-      </div>
+    <div class="project-card">
+      <h3>Profile & Payments</h3>
+      <p>Manage payout settings and keep your profile information up-to-date.</p>
     </div>
-
-    <hr class="featurette-divider" />
-
-    <div class="row featurette">
-      <div class="col-md-7 order-md-2">
-        <h2 class="featurette-heading">
-          Oh yeah, it’s that good.
-          <span class="text-muted">See for yourself.</span>
-        </h2>
-        <p class="lead">
-          Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id
-          ligula porta felis euismod semper. Praesent commodo cursus magna, vel
-          scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.
-        </p>
-      </div>
-      <div class="col-md-5 order-md-1">
-        <svg
-          class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto"
-          width="500"
-          height="500"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-          aria-label="Placeholder: 500x500"
-        >
-          <title>Placeholder</title>
-          <rect width="100%" height="100%" fill="#eee" />
-          <text x="50%" y="50%" fill="#aaa" dy=".3em">500x500</text>
-        </svg>
-      </div>
+    <div class="project-card">
+      <h3>Automated Notifications</h3>
+      <p>Receive email or SMS updates for important order and product changes.</p>
     </div>
+  </div> {% endcomment %}
 
-    <hr class="featurette-divider" />
+  <h2>Vision</h2>
+  <p>Our vision is to empower sellers with easy-to-use, scalable tools that help grow their online business. We believe in data-driven decisions and intuitive user experiences.</p>
+</div>
 
-    <div class="row featurette">
-      <div class="col-md-7">
-        <h2 class="featurette-heading">
-          And lastly, this one. <span class="text-muted">Checkmate.</span>
-        </h2>
-        <p class="lead">
-          Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id
-          ligula porta felis euismod semper. Praesent commodo cursus magna, vel
-          scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.
-        </p>
-      </div>
-      <div class="col-md-5">
-        <svg
-          class="bd-placeholder-img bd-placeholder-img-lg featurette-image img-fluid mx-auto"
-          width="500"
-          height="500"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          role="img"
-          aria-label="Placeholder: 500x500"
-        >
-          <title>Placeholder</title>
-          <rect width="100%" height="100%" fill="#eee" />
-          <text x="50%" y="50%" fill="#aaa" dy=".3em">500x500</text>
-        </svg>
-      </div>
-    </div>
-
-    <hr class="featurette-divider" />
-
-    <!-- /END THE FEATURETTES -->
-  </div>
-  <!-- /.container -->
-
-  <!-- FOOTER -->
-  <footer class="container">
-    <p class="float-right"><a href="#">Back to top</a></p>
-    <p>
-      &copy; 2017-2020 Company, Inc. &middot; <a href="#">Privacy</a> &middot;
-      <a href="#">Terms</a>
-    </p>
-  </footer>
-</main>
-<!-- Add all your carousel, marketing, and footer HTML content here as in your original post -->
-
+<footer>
+  <p>&copy; 2025 Saksham Maurya. All rights reserved. Seller Portal.</p>
+</footer>
 {% endblock %}
 
 {% block js %}
-<!-- Custom JavaScript if any -->
-<script
-  src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-  crossorigin="anonymous"
-></script>
-<script>
-  window.jQuery ||
-    document.write(
-      '<script src="/docs/4.5/assets/js/vendor/jquery.slim.min.js"><\/script>'
-    );
-</script>
-<script
-  src="/docs/4.5/dist/js/bootstrap.bundle.min.js"
-  integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
-  crossorigin="anonymous"
-></script>
+<!-- Optional JavaScript -->
 {% endblock %}
