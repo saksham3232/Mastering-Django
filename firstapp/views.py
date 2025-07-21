@@ -263,7 +263,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
-PRODUCTS_PER_PAGE = 2
+PRODUCTS_PER_PAGE = 4
 
 def listProducts(request):
     ordering = request.GET.get('ordering', "")

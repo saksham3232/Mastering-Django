@@ -39,6 +39,40 @@
       background: linear-gradient(135deg, #ff6ec4, #7873f5);
       color: #fff;
     }
+
+    .custom-alert {
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      animation: fadeInUp 0.5s ease-out;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .custom-alert .close {
+      font-size: 1.25rem;
+      color: #000;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .custom-alert .close:hover {
+      opacity: 1;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
   </style>
 
   {% block css %}{% endblock %}
@@ -91,15 +125,18 @@
   </nav>
 
   {% if messages %}
-    {% for message in messages %}
-      <div class="text-center alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="margin-bottom:0px;">
-        {{ message|safe }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    {% endfor %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show custom-alert" role="alert">
+          {{ message|safe }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
   {% endif %}
+
 
   {% block body %}
   {% endblock %}
