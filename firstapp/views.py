@@ -446,12 +446,47 @@ def payment(request):
         return render(request, 'firstapp/payment/paymentsummaryrazorpay.html', {'order':order, 'order_id': razorpay_order['id'], 'orderId':order.order_id, 'final_price':final_price, 'razorpay_merchant_id':settings.RAZORPAY_KEY_ID, 'callback_url':callback_url})
     else:
         return HttpResponse('505 Not Found')
+    
 
-from razorpay.errors import SignatureVerificationError
+# for generating pdf invoice
+from io import BytesIO
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+import os
+
+
+def fetch_resources(uri, rel):
+    path = os.path.join(uri.replace(settings.STATIC_URL, ""))
+    return path
+
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)#, link_callback=fetch_resources)
+    if not pdf.err:
+        # return result.getvalue()
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
+
+
+
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Order
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import get_template, render_to_string
+from django.utils.timezone import now
+from io import BytesIO
+from xhtml2pdf import pisa
+import logging
+import os
+
+from razorpay.errors import SignatureVerificationError, BadRequestError
+from .models import Order, Cart, ProductInCart
+from django.conf import settings
 
 @csrf_exempt
 def handlerequest(request):
@@ -492,11 +527,49 @@ def handlerequest(request):
                 order_db.payment_status = 1
                 order_db.save()
 
+
+                # For generating invoice pdf
+                template = get_template('firstapp/payment/invoice.html')
+                data = {
+                    'order_id': order_db.order_id,
+                    'transaction_id': order_db.razorpay_payment_id,
+                    'user_email': order_db.user.email,
+                    'date': str(order_db.datetime_of_payment),
+                    'name': order_db.user.name,
+                    'order': order_db,
+                    'amount': order_db.total_amount,
+                }
+                html = template.render(data)
+                result = BytesIO()
+                pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+                pdf = result.getvalue()
+                filename = "Invoice_" + data['order_id'] + ".pdf"
+
+                mail_subject = 'Your Order Invoice'
+                message = render_to_string('firstapp/payment/emailinvoice.html', {
+                    'user': order_db.user,
+                    'order': order_db,
+                })
+                to_email = order_db.user.email
+                email = EmailMultiAlternatives(
+                    subject=mail_subject,
+                    body="Please find attached your invoice.",
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[to_email]
+                )
+                email.attach_alternative(message, "text/html")
+                email.attach(filename, pdf, 'application/pdf')
+                email.send(fail_silently=False)
+
+
                 # ✅ EMPTY THE CART
                 cart = Cart.objects.get(user=order_db.user)
                 ProductInCart.objects.filter(cart=cart).delete()
 
-                return render(request, 'firstapp/payment/paymentsuccess.html')
+                return render(request, 'firstapp/payment/paymentsuccess.html', 
+                              {'id': order_db.id,}
+                            )
+
 
             except SignatureVerificationError:
                 order_db.payment_status = 2
@@ -508,3 +581,33 @@ def handlerequest(request):
             return HttpResponse('Error occurred while processing the payment. Please try again.')
 
     return HttpResponse('Invalid request method.')
+
+from django.views import View
+
+class GenerateInvoice(View):
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            order_db = Order.objects.get(id=pk, user=request.user, payment_status=1)
+        except:
+            return HttpResponse('Order not found or payment not successful.')
+        data = {
+            'order_id': order_db.order_id,
+            'transaction_id': order_db.razorpay_payment_id,
+            'user_email': order_db.user.email,
+            'date': str(order_db.datetime_of_payment),
+            'name': order_db.user.name,
+            'order': order_db,
+            'amount': order_db.total_amount,
+        }
+        pdf = render_to_pdf('firstapp/payment/invoice.html', data)
+        # return HttpResponse(pdf, content_type='application/pdf')
+
+        # force download
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            filename = "Invoice_%s.pdf" %(data['order_id'])
+            # content = "inline; filename='%s'" %(filename)
+            # content = "attachment; filename='%s'" %(filename)
+            response['Content-Disposition'] = f"attachment; filename={filename}"
+            return response
+        return HttpResponse("Error generating PDF")

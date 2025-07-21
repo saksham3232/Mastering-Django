@@ -180,10 +180,14 @@ DEFAULT_FROM_EMAIL = 'Testing <sakshammaurya678@gmail.com>'
 #PASSWORD_RESET_TIMEOUT_DAYS
 import os
 
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR , 'static_cdn')   
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),                # mention folders in saticfiles_dirs where django has to look for static files except static folder inside apps during development 
+]
 
 # Razorpay Settings
 RAZORPAY_KEY_ID = 'rzp_test_1k5VRA8tapTW9V'
