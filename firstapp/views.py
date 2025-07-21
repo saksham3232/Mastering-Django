@@ -265,38 +265,91 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 PRODUCTS_PER_PAGE = 4
 
+
+# this is apply filters on current page products
 def listProducts(request):
     ordering = request.GET.get('ordering', "")
-    search = request.GET.get('search', "")
+    search = request.GET.get('search', "").lower()
     price = request.GET.get('price', "")
 
-    product = Product.objects.all()
+    all_products = Product.objects.all()
+    paginator = Paginator(all_products, PRODUCTS_PER_PAGE)
 
+    page = request.GET.get('page', 1)
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    # Now work only on the products of the current page
+    current_page_products = list(page_obj.object_list)
+
+    # ✅ Filtering manually on current page products (Python-based, not ORM)
     if search:
-        product = product.filter(Q(product_name__icontains=search) | Q(brand__icontains=search))
-
-    if ordering:
-        product = product.order_by(ordering)
+        current_page_products = [
+            p for p in current_page_products
+            if search in p.product_name.lower() or search in p.brand.lower()
+        ]
 
     if price:
-        product = product.filter(price__lt=price)
+        try:
+            price = float(price)
+            current_page_products = [p for p in current_page_products if p.price < price]
+        except ValueError:
+            pass
 
-    # Pagination AFTER filtering and ordering
-    page = request.GET.get('page', 1)
-    product_paginator = Paginator(product, PRODUCTS_PER_PAGE)
-    try:
-        product = product_paginator.page(page)
-    except EmptyPage:
-        product = product_paginator.page(product_paginator.num_pages)
-    except:
-        product = product_paginator.page(1)
+    if ordering:
+        reverse = ordering.startswith('-')
+        field = ordering.lstrip('-')
+        try:
+            current_page_products.sort(key=lambda p: getattr(p, field), reverse=reverse)
+        except AttributeError:
+            pass  # ignore invalid ordering field
 
     return render(request, 'firstapp/listproducts.html', {
-        'product': product,
-        'page_obj': product,
+        'product': current_page_products,
+        'page_obj': page_obj,
         'is_paginated': True,
-        'paginator': product_paginator
+        'paginator': paginator,
     })
+
+# this is apply filters on all products
+# Uncomment this function if you want to use it instead of the above one
+# def listProducts(request):
+#     ordering = request.GET.get('ordering', "")
+#     search = request.GET.get('search', "")
+#     price = request.GET.get('price', "")
+
+#     product = Product.objects.all()
+
+#     if search:
+#         product = product.filter(Q(product_name__icontains=search) | Q(brand__icontains=search))
+
+#     if ordering:
+#         product = product.order_by(ordering)
+
+#     if price:
+#         product = product.filter(price__lt=price)
+
+#     # Pagination AFTER filtering and ordering
+#     page = request.GET.get('page', 1)
+#     product_paginator = Paginator(product, PRODUCTS_PER_PAGE)
+#     try:
+#         product = product_paginator.page(page)
+#     except EmptyPage:
+#         product = product_paginator.page(product_paginator.num_pages)
+#     except:
+#         product = product_paginator.page(1)
+
+#     return render(request, 'firstapp/listproducts.html', {
+#         'product': product,
+#         'page_obj': product,
+#         'is_paginated': True,
+#         'paginator': product_paginator
+#     })
+
 
 
 def suggestionApi(request):
