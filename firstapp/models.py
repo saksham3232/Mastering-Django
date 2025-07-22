@@ -259,7 +259,7 @@ class Order(models.Model):
         return super().save(*args, **kwargs)
     
     def __str__(self):
-        return self.user.email + " - " + str(self.order_id)
+        return self.user.email + " - " + str(self.id)
 
 
 
