@@ -155,11 +155,11 @@ class Customer(CustomUser):
 
 class Contact(models.Model):
     email = models.EmailField()
-    name = models.CharField()
-    phone_regex = RegexValidator(regex=r'^\d{10}$',
-                                 message="Phone number should be 10 digits long and contain only numbers.")
-    phone = models.CharField(validators=[phone_regex])
+    name = models.CharField(max_length=255)  # ✅ must have max_length
+    phone_regex = RegexValidator(regex=r'^\d{10}$', message="Phone number must be 10 digits.")
+    phone = models.CharField(validators=[phone_regex], max_length=10)  # ✅ must have max_length
     query = models.TextField()
+
 
     
 
@@ -176,7 +176,7 @@ class Contact(models.Model):
 
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
-    product_name = models.CharField(max_length=15)
+    product_name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='productimages', default=None, blank=True, null=True)
     price = models.FloatField()
     brand = models.CharField(max_length=1000, default='Unknown')
@@ -245,7 +245,7 @@ class Order(models.Model):
 
     total_amount = models.FloatField(default=0.0)
     payment_status = models.IntegerField(choices=payment_status_choices, default=3)
-    order_id = models.CharField(unique=True, max_length=100, null=True, blank=True, default=None)
+    order_id = models.CharField(primary_key=True, max_length=100, unique=True, blank=True, default='')
     datetime_of_payment = models.DateTimeField(default=timezone.now)
     # related to razorpay
     razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
