@@ -245,7 +245,7 @@ class Order(models.Model):
 
     total_amount = models.FloatField(default=0.0)
     payment_status = models.IntegerField(choices=payment_status_choices, default=3)
-    order_id = models.CharField(primary_key=True, max_length=100, unique=True, blank=True, default='')
+    order_id = models.CharField(unique=True, max_length=100, null=True, blank=True, default=None)
     datetime_of_payment = models.DateTimeField(default=timezone.now)
     # related to razorpay
     razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
