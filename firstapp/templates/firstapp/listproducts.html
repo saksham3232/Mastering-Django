@@ -245,9 +245,20 @@
       <option id="product_name" value="product_name">Product Name</option>
       <option id="-date_added" value="-date_added">What's New</option>
     </select>
+      <!-- ✅ Clear All Filters Button -->
+    <button type="button" onclick="window.location.href='/listproducts/'" style="
+      padding: 12px 18px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;">
+      Clear All Filters
+    </button>
   </form>
 </div>
-
 <!-- Product Cards -->
 <div class="product-cards">
   {% for i in product %}
@@ -255,7 +266,8 @@
     <img src="/media/{{ i.image }}" alt="{{ i.product_name }}">
     <h3><a href="{% host_url 'productdetail' pk=i.pk host 'www' %}">{{ i.product_name }}</a></h3>
     <p class="product-price">₹{{ i.price }}</p>
-    <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}">Add to Cart</a>
+    {% comment %} <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}">Add to Cart</a> {% endcomment %}
+    <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}?next={{ request.get_full_path }}">Add to Cart</a>
   </div>
   {% endfor %}
 </div>
