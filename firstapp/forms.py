@@ -49,7 +49,7 @@ class RegistrationFormSeller(UserCreationForm):
 
 class RegistrationForm(UserCreationForm):
     class Meta:
-        model = Seller
+        model = Customer
         fields = [
             'email',
             'name',
