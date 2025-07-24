@@ -282,3 +282,14 @@ class ProductInOrder(models.Model):
 class Deal(models.Model):
     user = models.ManyToManyField(CustomUser)
     deal_name = models.CharField(max_length=255)
+
+
+class PremiumProduct(models.Model):
+    product_name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to = "firstapp/premiumproductimages", default = None, null = True, blank = True)
+    price = models.FloatField()
+    brand = models.CharField(max_length=1000)
+    date_added = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.product_name} - Premium"
