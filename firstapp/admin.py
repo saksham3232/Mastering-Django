@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 
-from .models import Product, Cart, ProductInCart, Order, Deal, Customer, Seller, Contact, ProductInOrder
+from .models import Product, Cart, ProductInCart, Order, Deal, Customer, Seller, Contact, ProductInOrder, PremiumProduct
 # Register your models here,
 
 
@@ -169,3 +169,5 @@ class SessionAdmin(admin.ModelAdmin):
 admin.site.register(Session, SessionAdmin)
 
 admin.site.register(ProductInOrder)
+
+admin.site.register(PremiumProduct)

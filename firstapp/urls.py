@@ -9,7 +9,7 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
-    # path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls),
     path('', views.Index.as_view(), name='index'),
     path('contactus/', views.contactus2, name='contact'),
     path('contactusclass/', views.ContactUs.as_view(), name='contactclass'),
@@ -32,6 +32,9 @@ urlpatterns = [
 
     path('api/suggestionapi/', views.suggestionApi, name="suggestionapi"),
 
+    path('addtopremium/', views.addToPremiumGroup, name='addtopremium'),
+    # path('premiumproducts/', views.premiumProducts, name='premiumproducts'),
+    path('premiumproducts/', views.PremiumProducts.as_view(), name='premiumproducts'),
 
     # Payment Endpoints
     path('payment/', views.payment, name='payment'),

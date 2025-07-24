@@ -293,3 +293,32 @@ class PremiumProduct(models.Model):
 
     def __str__(self):
         return f"{self.product_name} - Premium"
+    
+    class Meta:
+        permissions = (
+            ('can_avail_premium_delivery', 'Can avail premium delivery on premium products'),
+            ('can_add_premium_discount', 'Can add premium discount on premium products'),
+        )
+
+
+class CustomPermissions(models.Model):
+    class Meta:
+
+        managed = False  # No database table creation or deletion  \
+                         # operations will be performed for this model.
+
+        default_permissions = () # disable "add", "change", "delete"
+                                 # and "view" default permissions
+
+        # All the custom permissions not related to models on Manufacturer
+        permissions = (
+            ('accept_order', 'can accept order'),
+            ('reject_order', 'can reject order'),
+            ('view_order', 'can view order'),
+            ('change_order', 'can change order'),
+            ('view_return', 'can view return'),
+            ('accept_return', 'can accept return'),
+            ('reject_return', 'can reject return'),
+            ('change_return', 'can change return'),
+            ('view_dashboard', 'can view dashboard'),
+        )
