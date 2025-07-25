@@ -8,6 +8,7 @@ urlpatterns = [
     path('signupseller/', views.RegisterViewSeller.as_view(), name='signupseller'),
     path('signup/', views.RegisterView.as_view(), name='signup'),
     path('login/', views.LoginViewUser.as_view(), name='login'),
+    path('sellerlogin/', views.SellerLoginView.as_view(), name='sellerlogin'),
     path('logout/', views.LogoutViewUser.as_view(), name='logout'),
     path('contactus/', views.ContactUs.as_view(), name='contactus'),
 ]

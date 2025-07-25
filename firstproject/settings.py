@@ -104,18 +104,18 @@ WSGI_APPLICATION = "firstproject.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    # "default": {
-    #     "ENGINE": "django.db.backends.sqlite3",
-    #     "NAME": BASE_DIR / "db.sqlite3",
-    # },
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "django_db",
-        "USER": "root",
-        "PASSWORD": "saksham123@@",
-        "HOST": "127.0.0.1",
-        "PORT": "3306",
-    }
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    },
+    # "default": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME": "django_db",
+    #     "USER": "root",
+    #     "PASSWORD": "saksham123@@",
+    #     "HOST": "127.0.0.1",
+    #     "PORT": "3306",
+    # }
 }
 
 
@@ -196,7 +196,7 @@ import os
 
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR , 'static_cdn')   
+STATIC_ROOT = os.path.join(BASE_DIR , 'static_cdn')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_DIRS = [

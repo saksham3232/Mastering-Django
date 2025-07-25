@@ -98,11 +98,35 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-
     def save(self, *args, **kwargs):
-        if not self.id:
-            self.type.append(self.default_type)
-        return super().save(*args, **kwargs)
+        if self.pk:
+            # Get the existing user from DB to compare old vs new type
+            old_user = CustomUser.objects.get(pk=self.pk)
+            old_types = set(old_user.type or [])
+            new_types = set(self.type or [])
+
+            # If Seller was removed, delete SellerAdditional
+            if CustomUser.Types.SELLER in old_types and CustomUser.Types.SELLER not in new_types:
+                try:
+                    self.selleradditional.delete()
+                except SellerAdditional.DoesNotExist:
+                    pass
+
+            # If Customer was removed, delete CustomerAdditional
+            if CustomUser.Types.CUSTOMER in old_types and CustomUser.Types.CUSTOMER not in new_types:
+                try:
+                    self.customeradditional.delete()
+                except CustomerAdditional.DoesNotExist:
+                    pass
+        else:
+            # First-time save: assign default type if not set
+            if not self.type:
+                self.type = [self.default_type]
+            elif self.default_type not in self.type:
+                self.type.append(self.default_type)
+
+        super().save(*args, **kwargs)
+
     
 
 
@@ -114,6 +138,10 @@ class SellerAdditional(models.Model):
     user=models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gst=models.CharField(max_length=15, unique=True)
     warehouse_location=models.CharField(max_length=1000)
+
+
+    def __str__(self):
+        return f"{self.user.email} - GST: {self.gst}, Location: {self.warehouse_location}"
 
 
 # Model Managers for proxy models

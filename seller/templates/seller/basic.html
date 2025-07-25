@@ -72,6 +72,53 @@
         transform: translateY(0);
       }
     }
+
+    /* Custom SignUp & Login Button Styles */
+    .btn-signup {
+      background-image: linear-gradient(135deg, #43e97b, #38f9d7);
+      color: #fff !important;
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .btn-signup:hover {
+      background-image: linear-gradient(135deg, #38f9d7, #43e97b);
+      color: #000 !important;
+      transform: scale(1.03);
+    }
+
+    .btn-login {
+      background-image: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff !important;
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .btn-login:hover {
+      background-image: linear-gradient(135deg, #764ba2, #667eea);
+      color: #fff !important;
+      transform: scale(1.03);
+    }
+
+    .dropdown-menu .dropdown-item {
+      font-weight: 500;
+      color: #212529;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dropdown-menu .dropdown-item:hover {
+      background-color: #f1f1f1;
+      color: #007bff;
+    }
+
+    .navbar .btn,
+    .navbar .dropdown {
+      margin-top: 0.25rem;
+    }
   </style>
 
   {% block css %}{% endblock %}
@@ -98,23 +145,37 @@
         </li>
       </ul>
 
-      <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle dropdownMenuButton" type="button"
-          id="dropdownMenuButton1" data-toggle="dropdown" aria-expanded="false">
-          Account
-        </button>
-        <ul class="dropdown-menu dropdown-menu-left dropdown-menu-lg-right" aria-labelledby="dropdownMenuButton">
-          <li><a class="dropdown-item" href="{% host_url 'signupseller' host 'services' %}">Sign Up for Seller</a></li>
-          <li><a class="dropdown-item" href="{% host_url 'signup' host 'services' %}">Sign Up</a></li>
-          <li><a class="dropdown-item" href="{% host_url 'login' host 'services' %}">Login</a></li>
-          <li>
-            <form method="post" action="{% host_url 'logout' host 'services' %}">
-              {% csrf_token %}
-              <button type="submit" class="dropdown-item">Logout</button>
-            </form>
-          </li>
-        </ul>
-      </div>
+      {% if request.user.is_authenticated and 'Seller' in request.user.type %}
+        <div class="d-flex flex-column align-items-end text-right mr-3">
+          <div class="font-weight-bold text-dark small">
+            {{ request.user.name }}<br>
+            <span class="text-muted">{{ request.user.email }}</span>
+          </div>
+          <div class="dropdown mt-1">
+            <button class="btn btn-secondary dropdown-toggle dropdownMenuButton" type="button"
+                    id="dropdownMenuButton1" data-toggle="dropdown" aria-expanded="false">
+              Account
+            </button>
+            <ul class="dropdown-menu dropdown-menu-left dropdown-menu-lg-right" aria-labelledby="dropdownMenuButton">
+              <li>
+                <form method="post" action="{% host_url 'logout' host 'services' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item">Logout</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+      {% else %}
+        <div class="d-flex align-items-center mr-3">
+          <a class="btn btn-signup mr-2 px-4 py-2 font-weight-bold" href="{% host_url 'login' host 'services' %}?next={% host_url 'signupseller' host 'services' %}">
+            Sign Up
+          </a>
+          <a class="btn btn-login px-4 py-2 font-weight-bold" href="{% host_url 'sellerlogin' host 'services' %}">
+            Login
+          </a>
+        </div>
+      {% endif %}
     </div>
   </nav>
 

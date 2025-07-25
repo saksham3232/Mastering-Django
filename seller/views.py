@@ -10,12 +10,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 def index(request):
-    context = {
-        'age': 25,
-        'array': [1, 2, 3, 4, 5],
-        'dic': {'name': 'Saksham', 'age': 22, 'city': 'Lucknow'}
-    }
-    return render(request, 'seller/index.html', context)
+    # context = {
+    #     'age': 25,
+    #     'array': [1, 2, 3, 4, 5],
+    #     'dic': {'name': 'Saksham', 'age': 22, 'city': 'Lucknow'}
+    # }
+    return render(request, 'seller/index.html')
 
 
 
@@ -88,19 +88,48 @@ class ContactUs(FormView):
 class LoginViewUser(LoginView):
     template_name = 'seller/login.html'
 
+    def get_success_url(self):
+        return self.get_redirect_url() or reverse_lazy('index')
+
+
+
+class SellerLoginView(LoginView):
+    template_name = 'seller/sellerlogin.html'  # ✅ Use a different template (you can duplicate the normal one)
+
+    def form_valid(self, form):
+        user = form.get_user()
+        if CustomUser.Types.SELLER not in user.type:
+            form.add_error(None, "You are not authorized to login as a seller.")
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+
+from django.contrib import messages
+from django.shortcuts import redirect
 
 class RegisterViewSeller(LoginRequiredMixin, CreateView):
     template_name = 'seller/register.html'
     form_class = RegistrationFormSeller2
     success_url = reverse_lazy('index')
+    login_url = reverse_lazy('login')  # Optional: overrides settings.LOGIN_URL
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if SellerAdditional.objects.filter(user=request.user).exists():
+                messages.info(request, "You are already registered as a seller.")
+                return redirect('index')
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         user = self.request.user
-        user.type.append(user.Types.SELLER)
-        user.save()
-        form.instance.user = self.request.user
+        if user.Types.SELLER not in user.type:
+            user.type.append(user.Types.SELLER)
+            user.save()
+        form.instance.user = user
         return super().form_valid(form)
-    
+
+
+
 
 class LogoutViewUser(LogoutView):
     # success_url = reverse_lazy('index')
