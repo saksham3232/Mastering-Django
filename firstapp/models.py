@@ -207,6 +207,13 @@ class Contact(models.Model):
 
 
 class Product(models.Model):
+    seller = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        limit_choices_to={'type__contains': 'Seller'},
+        null=True,  # allow null temporarily
+        blank=True
+    )
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='productimages', default=None, blank=True, null=True)

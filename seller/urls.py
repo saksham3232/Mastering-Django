@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -11,4 +12,11 @@ urlpatterns = [
     path('sellerlogin/', views.SellerLoginView.as_view(), name='sellerlogin'),
     path('logout/', views.LogoutViewUser.as_view(), name='logout'),
     path('contactus/', views.ContactUs.as_view(), name='contactus'),
+    path('dashboard/', views.SellerDashboardView.as_view(), name='seller-dashboard'),
+    path('product/add/', views.ProductCreateView.as_view(), name='product-add'),
+    path('product/<int:pk>/edit/', views.ProductUpdateView.as_view(), name='product-edit'),
+    path('product/<int:pk>/delete/', views.ProductDeleteView.as_view(), name='product-delete'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

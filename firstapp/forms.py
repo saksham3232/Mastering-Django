@@ -73,3 +73,11 @@ class CartForm(forms.ModelForm):
         fields = [
             'quantity',
         ]
+
+from django import forms
+from .models import Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        exclude = ['seller', 'date_added', 'product_id']

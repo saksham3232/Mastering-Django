@@ -140,9 +140,12 @@
         <li class="nav-item">
           <a class="nav-link" href="{% host_url 'contactus' host 'services' %}">Contact Us</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Seller Dashboard</a>
-        </li>
+        {% if request.user.is_authenticated and 'Seller' in request.user.type %}
+          <li class="nav-item{% if request.path == '/seller/dashboard/' %} active{% endif %}">
+            <a class="nav-link" href="{% host_url 'seller-dashboard' host 'services' %}">Seller Dashboard</a>
+          </li>
+        {% endif %}
+
       </ul>
 
       {% if request.user.is_authenticated and 'Seller' in request.user.type %}
@@ -192,7 +195,10 @@
     </div>
   {% endif %}
 
-  {% block body %}{% endblock %}
+  {% block body %}
+    {% block content %}
+    {% endblock %}
+  {% endblock %}
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
     integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

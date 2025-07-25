@@ -1,0 +1,9 @@
+{% extends 'seller/basic.html' %}
+{% block content %}
+<h2>Delete "{{ object.product_name }}"?</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirm Delete</button>
+</form>
+<a href="{% url 'seller-dashboard' %}">Cancel</a>
+{% endblock %}

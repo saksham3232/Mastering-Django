@@ -140,3 +140,57 @@ class RegisterView(CreateView):
     template_name = 'seller/registerbaseuser.html'
     form_class = RegistrationForm
     success_url = reverse_lazy('index')
+
+
+
+
+# seller/views.py
+
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from firstapp.models import Product
+from firstapp.forms import ProductForm
+
+class SellerDashboardView(LoginRequiredMixin, ListView):
+    model = Product
+    template_name = 'seller/dashboard.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        # print("Current User:", self.request.user)
+        # print("User Type:", self.request.user.type)
+        qs = Product.objects.filter(seller=self.request.user)
+        # print("QuerySet count:", qs.count())
+        return qs
+
+
+
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'seller/product_form.html'
+    success_url = reverse_lazy('seller-dashboard')
+
+    def form_valid(self, form):
+        form.instance.seller = self.request.user
+        return super().form_valid(form)
+
+
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'seller/product_form.html'
+    success_url = reverse_lazy('seller-dashboard')
+
+    def get_queryset(self):
+        return Product.objects.filter(seller=self.request.user)
+
+
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    model = Product
+    template_name = 'seller/product_confirm_delete.html'
+    success_url = reverse_lazy('seller-dashboard')
+
+    def get_queryset(self):
+        return Product.objects.filter(seller=self.request.user)
