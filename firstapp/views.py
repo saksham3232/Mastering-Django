@@ -625,7 +625,7 @@ from io import BytesIO
 from xhtml2pdf import pisa
 import logging
 import os
-
+from django.utils.timezone import localtime
 from razorpay.errors import SignatureVerificationError, BadRequestError
 from .models import Order, Cart, ProductInCart
 from django.conf import settings
@@ -681,7 +681,7 @@ def handlerequest(request):
                     'order_id': order_db.order_id,
                     'transaction_id': order_db.razorpay_payment_id,
                     'user_email': order_db.user.email,
-                    'date': str(order_db.datetime_of_payment),
+                    'date': localtime(order_db.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
                     'name': order_db.user.name,
                     'order': order_db,
                     'amount': order_db.total_amount,
@@ -733,7 +733,7 @@ def handlerequest(request):
                         'customer_email': order_db.user.email,
                         'phone': order_db.user.phone,
                         'address': order_db.user.customeradditional.address if order_db.user.customeradditional else '',
-                        'datetime_of_payment': order_db.datetime_of_payment.strftime('%d %B %Y, %I:%M %p'),
+                        'datetime_of_payment': localtime(order_db.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
                         'transaction_id': order_db.razorpay_payment_id,
                     }
 
@@ -792,7 +792,7 @@ class GenerateInvoice(View):
             'order_id': order_db.order_id,
             'transaction_id': order_db.razorpay_payment_id,
             'user_email': order_db.user.email,
-            'date': str(order_db.datetime_of_payment),
+            'date': localtime(order_db.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
             'name': order_db.user.name,
             'order': order_db,
             'amount': order_db.total_amount,
