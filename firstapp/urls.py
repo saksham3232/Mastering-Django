@@ -29,6 +29,7 @@ urlpatterns = [
     path('login/', views.LoginViewUser.as_view(), name='login'),
     path('logout/', views.LogoutViewUser.as_view(), name='logout'),
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+    path('orders/', views.my_orders, name='orders'),
 
     path('api/suggestionapi/', views.suggestionApi, name="suggestionapi"),
 

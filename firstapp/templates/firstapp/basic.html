@@ -152,6 +152,10 @@
         <li class="nav-item">
           <a class="nav-link" href="{% host_url 'displaycart' host 'www' %}">Cart</a>
         </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% host_url 'orders' host 'www' %}">Orders</a>
+        </li>
       </ul>
 
       {% if request.user.is_authenticated %}

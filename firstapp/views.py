@@ -899,3 +899,31 @@ class PremiumProducts(PermissionRequiredMixin, ListView):
 
 # Removing permission from group
 # new_group.permissions.remove(permission)
+
+
+@login_required
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user)
+
+    # Auto-update status on view
+    for order in orders:
+        if not order.datetime_of_payment:
+            continue
+
+        days_passed = (timezone.now().date() - order.datetime_of_payment.date()).days
+
+        new_status = None
+        if days_passed <= 1:
+            new_status = 1  # Not Packed
+        elif 2 <= days_passed <= 4:
+            new_status = 2  # Ready for Shipment
+        elif 5 <= days_passed <= 6:
+            new_status = 3  # Shipped
+        elif days_passed >= 7:
+            new_status = 4  # Delivered
+
+        if new_status and order.status != new_status:
+            order.status = new_status
+            order.save()
+
+    return render(request, 'firstapp/my_orders.html', {'orders': orders})
