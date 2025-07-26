@@ -1,7 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
+{% load myfilters %}
 <head>
   <title>Invoice WonderShop</title>
 <style>
@@ -176,23 +176,22 @@ footer {
                   <th scope="col">PRODUCT</th>
                   <th scope="col">QUANTITY</th>
                   <th scope="col">PRICE</th>
+                  <th scope="col">TOTAL</th>
               </tr>
           </thead>
           <tbody>
-              {% for i in order.productinorder_set.all %}
-              <tr>
-                  <td scope="row">{{i.product}}</td>
-                  <td>{{i.quantity}}</td>
-                  <td>{{i.price}}</td>
-                  
-              </tr>
-              {% endfor %}
-              <tr>
-                  <td scope="row"></td>
-                  <td>TOTAL: </td>
-                  <td>{{amount}}</td>
-                  
-              </tr>
+            {% for i in order.productinorder_set.all %}
+            <tr>
+              <td class="desc">{{ i.product }}</td>
+              <td class="qty">{{ i.quantity }}</td>
+              <td class="unit">Rs. {{ i.price }}</td>
+              <td class="subtotal">Rs. {{ i.quantity|multiply:i.price }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+              <td colspan="3" class="total" style="text-align: right;"><strong>Grand Total:</strong></td>
+              <td class="total">Rs. {{ amount }}</td>
+            </tr>
           </tbody>
       </table>
 

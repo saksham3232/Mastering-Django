@@ -14,3 +14,10 @@ def addplaceholder(value, placeholder):
     if isinstance(value, BoundField):
         value.field.widget.attrs['placeholder'] = placeholder
     return value
+
+@register.filter
+def multiply(value, arg):
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return ''

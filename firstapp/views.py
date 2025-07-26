@@ -629,6 +629,11 @@ import os
 from razorpay.errors import SignatureVerificationError, BadRequestError
 from .models import Order, Cart, ProductInCart
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from collections import defaultdict
+from .models import Seller, ProductInOrder
 
 @csrf_exempt
 def handlerequest(request):
@@ -683,7 +688,7 @@ def handlerequest(request):
                 }
                 html = template.render(data)
                 result = BytesIO()
-                pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+                pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
                 pdf = result.getvalue()
                 filename = "Invoice_" + data['order_id'] + ".pdf"
 
@@ -702,6 +707,57 @@ def handlerequest(request):
                 email.attach_alternative(message, "text/html")
                 email.attach(filename, pdf, 'application/pdf')
                 email.send(fail_silently=False)
+
+                seller_emails = set()
+                seller_products = defaultdict(list)
+
+                # Group products by seller
+                for item in ProductInOrder.objects.filter(order=order_db):
+                    seller = item.product.seller
+                    if seller and seller.email:
+                        seller_emails.add(seller.email)
+                        seller_products[seller.email].append(item)
+
+                # Send email to each seller
+                for email in seller_emails:
+                    items = seller_products[email]
+                    seller_instance = Seller.objects.get(email=email)
+
+                    grand_total = sum(item.price * item.quantity for item in items)
+                    context = {
+                        'grand_total': grand_total,
+                        'seller_name': seller_instance.name,
+                        'products': items,
+                        'order_id': order_db.order_id,
+                        'customer_name': order_db.user.name,
+                        'customer_email': order_db.user.email,
+                        'phone': order_db.user.phone,
+                        'address': order_db.user.customeradditional.address if order_db.user.customeradditional else '',
+                        'datetime_of_payment': order_db.datetime_of_payment.strftime('%d %B %Y, %I:%M %p'),
+                        'transaction_id': order_db.razorpay_payment_id,
+                    }
+
+                    # Render HTML message
+                    html_message = render_to_string('firstapp/seller_notification.html', context)
+                    plain_message = strip_tags(html_message)
+
+                    # ✅ Generate seller-specific PDF invoice
+                    pdf_html = render_to_string('firstapp/payment/seller_invoice.html', context)
+                    result = BytesIO()
+                    pdf_status = pisa.pisaDocument(BytesIO(pdf_html.encode("utf-8")), result)
+                    pdf = result.getvalue()
+                    filename = f"SellerInvoice_{order_db.order_id}_{seller_instance.name.replace(' ', '_')}.pdf"
+
+                    # Send Email with PDF attached
+                    email_obj = EmailMultiAlternatives(
+                        subject=f'New Order Received: {order_db.order_id}',
+                        body=plain_message,
+                        from_email=settings.EMAIL_HOST_USER,
+                        to=[email],
+                    )
+                    email_obj.attach_alternative(html_message, "text/html")
+                    email_obj.attach(filename, pdf, 'application/pdf')
+                    email_obj.send(fail_silently=False)
 
 
                 # ✅ EMPTY THE CART
