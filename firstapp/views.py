@@ -488,57 +488,107 @@ class DeleteFromCart(LoginRequiredMixin, DeleteView):
 
 
 # Adding payment gateway
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
+
+from .models import Cart, ProductInCart, Order, ProductInOrder, CustomerAdditional
+from .forms import CustomerCheckoutForm
+
 import razorpay
+
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
-from .models import Order, ProductInOrder, Cart
-
 
 @login_required
 def payment(request):
+    user = request.user
+
+    try:
+        customer_additional = CustomerAdditional.objects.get(user=user)
+    except CustomerAdditional.DoesNotExist:
+        customer_additional = None
+
+    # Prepare initial form data
+    initial_data = {
+        'phone': user.phone or '',
+        'address': customer_additional.address if customer_additional else ''
+    }
+
     if request.method == 'POST':
-        try:
-            cart = Cart.objects.get(user = request.user)
-            products_in_cart = ProductInCart.objects.filter(cart=cart)
-            final_price = 0
-            if len(products_in_cart) > 0:
-                order = Order.objects.create(user = request.user, total_amount = 0)
-                for product in products_in_cart:
-                    product_in_order = ProductInOrder.objects.create(
-                        order = order,
-                        product = product.product,
-                        quantity = product.quantity,
-                        price = product.product.price
+        form = CustomerCheckoutForm(request.POST)
+
+        if form.is_valid():
+            # Save phone
+            user.phone = form.cleaned_data['phone']
+            user.save()
+
+            # Save or update address
+            CustomerAdditional.objects.update_or_create(
+                user=user,
+                defaults={'address': form.cleaned_data['address']}
+            )
+
+            # ✅ After saving, proceed directly to payment
+            try:
+                cart = Cart.objects.get(user=user)
+                products_in_cart = ProductInCart.objects.filter(cart=cart)
+                final_price = 0
+
+                if not products_in_cart.exists():
+                    return HttpResponse('No products in cart to proceed with payment.')
+
+                # Create Order
+                order = Order.objects.create(user=user, total_amount=0)
+                for item in products_in_cart:
+                    ProductInOrder.objects.create(
+                        order=order,
+                        product=item.product,
+                        quantity=item.quantity,
+                        price=item.product.price
                     )
-                    final_price = final_price + (product.product.price * product.quantity)
-            else:
-                return HttpResponse('No products in cart to proceed with payment.')
-        except:
-            return HttpResponse('Error occurred while processing the payment. Please try again.')
+                    final_price += item.product.price * item.quantity
 
-        order.total_amount = final_price
-        order.save()
+                order.total_amount = final_price
+                order.save()
 
-        order_currency = 'INR'
-        
-        callback_url = 'http://' + str(get_current_site(request)) + "/handlerequest/"
-        print(callback_url)
-        notes = {'order-type': 'basic order from the website', 'key': 'value'}
-        razorpay_order = razorpay_client.order.create(dict(
-            amount=final_price * 100,
-            currency=order_currency,
-            notes=notes,
-            receipt=order.order_id,
-            payment_capture='0'
-        ))
-        print(razorpay_order['id'])
-        order.razorpay_order_id = razorpay_order['id']
-        order.save()
+                # Razorpay
+                order_currency = 'INR'
+                callback_url = 'http://' + str(get_current_site(request)) + "/handlerequest/"
+                notes = {'order-type': 'basic order from the website'}
 
-        return render(request, 'firstapp/payment/paymentsummaryrazorpay.html', {'order':order, 'order_id': razorpay_order['id'], 'orderId':order.order_id, 'final_price':final_price, 'razorpay_merchant_id':settings.RAZORPAY_KEY_ID, 'callback_url':callback_url})
+                razorpay_order = razorpay_client.order.create(dict(
+                    amount=int(final_price * 100),
+                    currency=order_currency,
+                    notes=notes,
+                    receipt=order.order_id,
+                    payment_capture='0'
+                ))
+
+                order.razorpay_order_id = razorpay_order['id']
+                order.save()
+
+                return render(request, 'firstapp/payment/paymentsummaryrazorpay.html', {
+                    'order': order,
+                    'order_id': razorpay_order['id'],
+                    'orderId': order.order_id,
+                    'final_price': final_price,
+                    'razorpay_merchant_id': settings.RAZORPAY_KEY_ID,
+                    'callback_url': callback_url
+                })
+
+            except Exception as e:
+                print("Payment error:", e)
+                return HttpResponse('Error during payment setup.')
+
     else:
-        return HttpResponse('505 Not Found')
-    
+        # First-time GET request
+        form = CustomerCheckoutForm(initial=initial_data)
+
+    return render(request, 'firstapp/checkoutdetails.html', {'form': form})
+
+
 
 # for generating pdf invoice
 from io import BytesIO

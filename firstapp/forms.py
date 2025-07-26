@@ -81,3 +81,36 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         exclude = ['seller', 'date_added', 'product_id']
+
+
+# forms.py
+from django import forms
+from .models import CustomerAdditional
+
+from django import forms
+from .models import CustomerAdditional
+from django.core.validators import RegexValidator
+
+class CustomerCheckoutForm(forms.ModelForm):
+    phone = forms.CharField(
+        max_length=10,
+        required=True,
+        label="Phone Number",
+        help_text="Enter 10-digit mobile number",
+        validators=[RegexValidator(regex=r'^\d{10}$', message='Phone number must be exactly 10 digits')],
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Phone Number'
+        })
+    )
+
+    class Meta:
+        model = CustomerAdditional
+        fields = ['phone', 'address']
+        widgets = {
+            'address': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'rows': 4,
+                'placeholder': 'Enter your complete address'
+            }),
+        }

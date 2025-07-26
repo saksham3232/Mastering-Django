@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 
-from .models import Product, Cart, ProductInCart, Order, Deal, Customer, Seller, Contact, ProductInOrder, PremiumProduct
+from .models import Product, Cart, ProductInCart, Order, Deal, Customer, Seller, Contact, ProductInOrder, PremiumProduct, CustomerAdditional
 # Register your models here,
 
 
@@ -15,6 +15,8 @@ from .models import CustomUser, SellerAdditional
 class SellerAdditionalInline(admin.TabularInline):
     model = SellerAdditional
 
+class CustomerAdditionalInline(admin.TabularInline):
+    model = CustomerAdditional
 
 
 class CustomUserAdmin(UserAdmin):
@@ -45,6 +47,12 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ('email',)
     ordering = ('email',)
+
+    inlines = [
+        CustomerAdditionalInline,
+        SellerAdditionalInline,
+    ]
+
 
 
 
@@ -147,6 +155,7 @@ admin.site.register(Deal)#, DealAdmin)
 admin.site.register(Customer)
 admin.site.register(Seller, SellerAdmin)
 admin.site.register(Contact)
+admin.site.register(CustomerAdditional)
 admin.site.register(SellerAdditional)
 
 

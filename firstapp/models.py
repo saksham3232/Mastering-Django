@@ -134,6 +134,9 @@ class CustomerAdditional(models.Model):
     user=models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     address = models.CharField(max_length=1000)
 
+    def __str__(self):
+        return f"{self.user.email} - Address: {self.address}"
+
 class SellerAdditional(models.Model):
     user=models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     gst=models.CharField(max_length=15, unique=True)
