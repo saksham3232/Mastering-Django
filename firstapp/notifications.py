@@ -16,7 +16,7 @@ def send_order_status_email(order):
     html_message = render_to_string('firstapp/order_status_update.html', context)
     plain_message = f"Your order #{order.order_id} status has been updated to '{order.get_status_display()}'."  # human-readable
 
-    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, recipient, html_message=html_message)
+    send_mail(subject, plain_message, settings.EMAIL_HOST_USER, recipient, html_message=html_message)
 
 
 def create_in_app_notification(order):
