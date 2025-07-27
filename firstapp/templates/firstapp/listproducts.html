@@ -66,9 +66,9 @@
 
   .search-group button:hover {
     background: linear-gradient(to right, #667eea, #764ba2);
+    color: white;
   }
 
-  /* Enhanced Dropdowns */
   .filter-form select {
     appearance: none;
     padding: 12px 18px;
@@ -142,24 +142,35 @@
     font-weight: bold;
   }
 
-  .btn-card {
-    display: inline-block;
+  .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
     margin-top: 16px;
+  }
+
+  .btn-card {
     background: linear-gradient(to right, #4e54c8, #8f94fb);
     padding: 10px 20px;
     border-radius: 10px;
     font-weight: bold;
     color: white;
     text-decoration: none;
-    transition: 0.3s ease;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: none;
   }
 
   .btn-card:hover {
     background: linear-gradient(to right, #667eea, #764ba2);
     transform: scale(1.05);
+    text-decoration: underline;
+    text-decoration-color: white;
+    text-underline-offset: 4px;
+    color: white;
   }
 
-  /* Centered Pagination */
   .pagination {
     display: flex;
     justify-content: center;
@@ -245,7 +256,7 @@
       <option id="product_name" value="product_name">Product Name</option>
       <option id="-date_added" value="-date_added">What's New</option>
     </select>
-      <!-- ✅ Clear All Filters Button -->
+
     <button type="button" onclick="window.location.href='/listproducts/'" style="
       padding: 12px 18px;
       background: #dc3545;
@@ -259,6 +270,7 @@
     </button>
   </form>
 </div>
+
 <!-- Product Cards -->
 <div class="product-cards">
   {% for i in product %}
@@ -266,8 +278,10 @@
     <img src="/media/{{ i.image }}" alt="{{ i.product_name }}">
     <h3><a href="{% host_url 'productdetail' pk=i.pk host 'www' %}">{{ i.product_name }}</a></h3>
     <p class="product-price">₹{{ i.price }}</p>
-    {% comment %} <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}">Add to Cart</a> {% endcomment %}
-    <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}?next={{ request.get_full_path }}">Add to Cart</a>
+    <div class="btn-group">
+      <a class="btn-card" href="{% host_url 'productdetail' pk=i.pk host 'www' %}">View Product</a>
+      <a class="btn-card" href="{% host_url 'addtocart' id=i.product_id host 'www' %}?next={{ request.get_full_path }}">Add to Cart</a>
+    </div>
   </div>
   {% endfor %}
 </div>

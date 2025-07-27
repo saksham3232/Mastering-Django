@@ -903,7 +903,9 @@ from firstapp.notifications import handle_order_status_change
 
 @login_required
 def my_orders(request):
-    orders = Order.objects.filter(user=request.user).prefetch_related('productinorder_set__product')
+    orders = Order.objects.filter(user=request.user) \
+        .prefetch_related('productinorder_set__product') \
+        .order_by('-datetime_of_payment')
 
     for order in orders:
         # Auto-update status

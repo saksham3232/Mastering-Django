@@ -41,12 +41,16 @@
     font-weight: bold;
     color: white;
     text-decoration: none;
-    transition: 0.3s ease;
+    transition: all 0.3s ease;
   }
 
   .add-product-btn:hover {
     background: linear-gradient(to right, #667eea, #764ba2);
     transform: scale(1.05);
+    text-decoration: underline;
+    text-decoration-color: white;
+    text-underline-offset: 4px;
+    color: white; /* Ensures the text stays white on hover */
   }
 
   .product-cards {
@@ -109,11 +113,16 @@
     background: #4e54c8;
     color: white;
     text-decoration: none;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
   }
 
   .product-actions a:hover {
     background: #5f64d7;
+    transform: scale(1.05);
+    text-decoration: underline;
+    text-decoration-color: white;
+    text-underline-offset: 4px;
+    color: white;
   }
 
   @media (max-width: 768px) {
@@ -145,6 +154,7 @@
     <p class="product-price">₹{{ product.price }}</p>
     <p class="product-brand">{{ product.brand }}</p>
     <div class="product-actions">
+      <a href="{% url 'productdetail' pk=product.pk %}">View</a>
       <a href="{% url 'product-edit' product.pk %}">Edit</a>
       <a href="{% url 'product-delete' product.pk %}">Delete</a>
     </div>

@@ -18,6 +18,7 @@ urlpatterns = [
     path('product/<int:pk>/delete/', views.ProductDeleteView.as_view(), name='product-delete'),
 
     path('orders/', views.seller_orders, name='seller-orders'),
+    path('productdetail/<int:pk>/', views.ProductDetail.as_view(), name='productdetail'),
 ]
 
 if settings.DEBUG:

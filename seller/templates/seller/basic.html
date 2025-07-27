@@ -137,9 +137,6 @@
         <li class="nav-item{% if request.path == '/' %} active{% endif %}">
           <a class="nav-link" href="/">Home</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% host_url 'contactus' host 'services' %}">Contact Us</a>
-        </li>
         {% if request.user.is_authenticated and 'Seller' in request.user.type %}
           <li class="nav-item{% if request.path == '/seller/dashboard/' %} active{% endif %}">
             <a class="nav-link" href="{% host_url 'seller-dashboard' host 'services' %}">Seller Dashboard</a>
@@ -149,6 +146,9 @@
             <a class="nav-link" href="{% host_url 'seller-orders' host 'services' %}">Seller Orders</a>
           </li>
         {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% host_url 'contactus' host 'services' %}">Contact Us</a>
+        </li>
       </ul>
 
       {% if request.user.is_authenticated and 'Seller' in request.user.type %}

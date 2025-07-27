@@ -1,10 +1,6 @@
-{% extends 'firstapp/basic.html' %}
-{% load hosts %}
+{% extends 'seller/basic.html' %}
 {% load static %}
-
-{% block title %}
-  {{ product.product_name }}
-{% endblock %}
+{% block title %}{{ product.product_name }}{% endblock %}
 
 {% block css %}
 <style>
@@ -55,34 +51,57 @@
   .price {
     font-size: 1.5rem;
     color: #28a745;
-    margin-bottom: 20px;
     font-weight: bold;
-  }
-
-  .product-details p {
-    font-size: 1.1rem;
-    line-height: 1.6;
     margin-bottom: 20px;
   }
 
-  .btn-buy {
-    display: inline-block;
-    background: linear-gradient(to right, #4e54c8, #8f94fb);
-    color: white !important;
-    padding: 12px 24px;
-    border-radius: 12px;
-    text-decoration: none !important;
-    font-weight: bold;
-    transition: all 0.3s ease;
+  .meta-info {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .meta-info p {
+    margin: 6px 0;
+  }
+
+  .action-buttons {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 12px 20px;
+    font-size: 1rem;
     border: none;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
     cursor: pointer;
+    transition: transform 0.3s ease, background 0.3s ease;
+    display: inline-block;
   }
 
-  .btn-buy:hover {
+  .btn-edit {
+    background: linear-gradient(to right, #4e54c8, #8f94fb);
+  }
+
+  .btn-edit:hover {
     background: linear-gradient(to right, #667eea, #764ba2);
     transform: scale(1.05);
-    color: white !important;
-    text-decoration: none !important;
+  }
+
+  .btn-delete {
+    background: linear-gradient(to right, #f85032, #e73827);
+  }
+
+  .btn-delete:hover {
+    background: linear-gradient(to right, #f12711, #f5af19);
+    transform: scale(1.05);
   }
 
   @media (max-width: 768px) {
@@ -97,19 +116,32 @@
       width: 100%;
     }
 
-    .product-details {
-      padding: 20px;
+    .action-buttons {
+      flex-direction: column;
+      width: 100%;
     }
   }
-  .meta-info {
+
+  .btn-edit,
+  .btn-delete {
+    padding: 12px 20px;
     font-size: 1rem;
-    color: #666;
-    margin-bottom: 20px;
+    border: none;
+    border-radius: 10px;
+    color: white !important;
+    text-decoration: none !important;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s ease, background 0.3s ease;
+    display: inline-block;
   }
 
-  .meta-info p {
-    margin: 6px 0;
+  .btn-edit:hover,
+  .btn-delete:hover {
+    text-decoration: none !important;
+    color: white !important;
   }
+
 </style>
 {% endblock %}
 
@@ -121,20 +153,17 @@
 
   <div class="product-details">
     <h1>{{ product.product_name }}</h1>
-    <div class="meta-info"><strong>Brand:</strong> {{ product.brand }}</div>
     <div class="price">₹{{ product.price }}</div>
 
-    {% if product.desc %}
-      <p>{{ product.desc }}</p>
-    {% else %}
-      <p>No description provided for this product.</p>
-    {% endif %}
-
-    <a class="btn-buy" href="{% host_url 'addtocart' id=product.product_id host 'www' %}">Add to Cart</a>
-
     <div class="meta-info">
-      <p><strong>Seller:</strong> {{ product.seller.name }}</p>
-      <p><strong>Date Added:</strong> {{ product.date_added|date:"F d, Y" }}</p>
+      <p><strong>Brand:</strong> {{ product.brand }}</p>
+      <p><strong>Product ID:</strong> {{ product.pk }}</p>
+      <p><strong>Date Added:</strong> {{ product.date_added|date:"M d, Y, h:i A" }}</p>
+    </div>
+
+    <div class="action-buttons">
+      <a href="{% url 'product-edit' pk=product.pk %}" class="btn-edit">✏️ Edit Product</a>
+      <a href="{% url 'product-delete' pk=product.pk %}" class="btn-delete">🗑️ Delete Product</a>
     </div>
   </div>
 </div>

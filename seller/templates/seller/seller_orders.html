@@ -50,6 +50,7 @@
     height: 4px;
     background: #ccc;
     z-index: 0;
+    transition: background 0.3s ease;
   }
 
   .status-step {
@@ -86,7 +87,35 @@
   }
 
   .product-list li {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .product-info {
+    flex: 1;
+  }
+
+  .view-btn {
+    background-color: #4e54c8;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+  }
+
+  .view-btn:hover {
+    background-color: #3639a0;
+    transform: scale(1.05);
+    text-decoration: none;
+    color: white;
   }
 
   @media (max-width: 768px) {
@@ -108,21 +137,17 @@
       top: 8%;
       transform: translateX(-50%);
     }
+
+    .product-list li {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .view-btn {
+      margin-top: 5px;
+    }
   }
 
-  .status-timeline::before {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 8%;
-    right: 8%;
-    height: 4px;
-    background: #ccc; /* default gray */
-    z-index: 0;
-    transition: background 0.3s ease;
-  }
-
-  /* Progress Line Color When Order Status Advances */
   .status-timeline.status-2::before {
     background: linear-gradient(to right, #4e54c8 0%, #4e54c8 33%, #ccc 33%);
   }
@@ -135,6 +160,12 @@
     background: #4e54c8;
   }
 
+  .product-list .subtotal-line {
+    justify-content: flex-start !important;
+    font-weight: bold;
+    border: none;
+    margin-top: 10px;
+  }
 </style>
 {% endblock %}
 
@@ -146,7 +177,13 @@
     {% for order, items in order_map.items %}
       <div class="order-card">
         <h5>Order ID: {{ order.order_id }}</h5>
-        <p><strong>Customer:</strong> {{ order.user.email }}</p>
+        <h5>Transaction ID: {{ order.razorpay_payment_id }}</h5>
+
+        <p><strong>Customer Name:</strong> {{ order.user.name }}</p>
+        <p><strong>Customer Email:</strong> {{ order.user.email }}</p>
+        <p><strong>Phone:</strong> {{ order.user.phone }}</p>
+        <p><strong>Address:</strong> {{ order.user.customeradditional.address }}</p>
+
         <p><strong>Order Date:</strong> {{ order.datetime_of_payment|date:"M d, Y" }}</p>
         <p><strong>Status:</strong> {{ order.get_status_display }}</p>
 
@@ -174,9 +211,21 @@
         <strong>Your Products in this order:</strong>
         <ul class="product-list">
           {% for item in items %}
-            <li>{{ item.product.product_name }} — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.subtotal }}</li>
+            <li>
+              <div class="product-info">
+                <a href="{% url 'productdetail' pk=item.product.pk %}" style="text-decoration: none; color: #4e54c8; font-weight: bold;">
+                  {{ item.product.product_name }}
+                </a>
+                — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.subtotal }}
+              </div>
+              <a href="{% url 'productdetail' pk=item.product.pk %}" class="view-btn">
+                View Product
+              </a>
+            </li>
           {% endfor %}
-          <li><strong>Subtotal (your products):</strong> ₹{{ order.grand_total }}</li>
+          <li class="subtotal-line">
+            <strong>Subtotal (your products):</strong>&nbsp;₹{{ order.grand_total }}
+          </li>
         </ul>
       </div>
     {% endfor %}

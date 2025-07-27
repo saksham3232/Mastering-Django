@@ -203,7 +203,9 @@ from firstapp.notifications import handle_order_status_change
 @login_required
 def seller_orders(request):
     # Fetch all product-in-order items for this seller
-    seller_items = ProductInOrder.objects.select_related('order', 'product').filter(product__seller=request.user)
+    seller_items = ProductInOrder.objects.select_related('order', 'product')\
+    .filter(product__seller=request.user)\
+    .order_by('-order__datetime_of_payment')  # or '-order__created_at'
 
     # Group items by order
     order_map = {}  # { order: [seller's products in this order] }
@@ -243,3 +245,10 @@ def seller_orders(request):
         order.grand_total = grand_total
 
     return render(request, 'seller/seller_orders.html', {'order_map': order_map})
+
+from django.views.generic import DetailView
+
+class ProductDetail(DetailView):
+    model = Product
+    template_name = 'seller/productdetail.html'
+    context_object_name = 'product'
