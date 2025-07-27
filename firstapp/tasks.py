@@ -1,5 +1,6 @@
 from .models import Order
 from django.utils import timezone
+from firstapp.notifications import handle_order_status_change
 
 def update_order_statuses():
     orders = Order.objects.all()
@@ -22,9 +23,8 @@ def update_order_statuses():
         elif days_passed >= 7:
             new_status = 4  # Delivered
 
+        handle_order_status_change(order, new_status)
         if new_status and order.status != new_status:
-            order.status = new_status
-            order.save()
             updated_count += 1
 
     print(f"✅ {updated_count} orders updated based on days passed.")
