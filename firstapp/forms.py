@@ -85,11 +85,8 @@ class ProductForm(forms.ModelForm):
 
 # forms.py
 from django import forms
-from .models import CustomerAdditional
-
-from django import forms
-from .models import CustomerAdditional
 from django.core.validators import RegexValidator
+from .models import CustomerAdditional
 
 class CustomerCheckoutForm(forms.ModelForm):
     phone = forms.CharField(
@@ -106,11 +103,34 @@ class CustomerCheckoutForm(forms.ModelForm):
 
     class Meta:
         model = CustomerAdditional
-        fields = ['phone', 'address']
+        fields = [
+            'phone',
+            'street_address',
+            'city',
+            'district',
+            'state',
+            'pincode',
+        ]
         widgets = {
-            'address': forms.Textarea(attrs={
+            'street_address': forms.Textarea(attrs={
                 'class': 'form-textarea',
-                'rows': 4,
-                'placeholder': 'Enter your complete address'
+                'rows': 2,
+                'placeholder': 'Street Address (e.g., House No, Area)'
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'City'
+            }),
+            'district': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'District'
+            }),
+            'state': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'State'
+            }),
+            'pincode': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Pincode'
             }),
         }

@@ -131,11 +131,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 class CustomerAdditional(models.Model):
-    user=models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    address = models.CharField(max_length=1000)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    street_address = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    district = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    pincode = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.email} - Address: {self.address}"
+        return f"{self.user.email} - Address: {self.get_full_address()}"
+
+    def get_full_address(self):
+        return f"{self.street_address}, {self.city}, {self.district}, {self.state} - {self.pincode}"
+
 
 class SellerAdditional(models.Model):
     user=models.OneToOneField(CustomUser, on_delete=models.CASCADE)

@@ -510,28 +510,38 @@ def payment(request):
     except CustomerAdditional.DoesNotExist:
         customer_additional = None
 
-    # Prepare initial form data
+    # 🟦 Initial data for form prefill
     initial_data = {
         'phone': user.phone or '',
-        'address': customer_additional.address if customer_additional else ''
+        'street_address': customer_additional.street_address if customer_additional else '',
+        'city': customer_additional.city if customer_additional else '',
+        'district': customer_additional.district if customer_additional else '',
+        'state': customer_additional.state if customer_additional else '',
+        'pincode': customer_additional.pincode if customer_additional else '',
     }
 
     if request.method == 'POST':
         form = CustomerCheckoutForm(request.POST)
 
         if form.is_valid():
-            # Save phone
+            # 🟢 Save phone
             user.phone = form.cleaned_data['phone']
             user.save()
 
-            # Save or update address
+            # 🟢 Save or update address fields
             CustomerAdditional.objects.update_or_create(
                 user=user,
-                defaults={'address': form.cleaned_data['address']}
+                defaults={
+                    'street_address': form.cleaned_data['street_address'],
+                    'city': form.cleaned_data['city'],
+                    'district': form.cleaned_data['district'],
+                    'state': form.cleaned_data['state'],
+                    'pincode': form.cleaned_data['pincode'],
+                }
             )
 
-            # ✅ After saving, proceed directly to payment
             try:
+                # 🛒 Cart processing
                 cart = Cart.objects.get(user=user)
                 products_in_cart = ProductInCart.objects.filter(cart=cart)
                 final_price = 0
@@ -539,7 +549,7 @@ def payment(request):
                 if not products_in_cart.exists():
                     return HttpResponse('No products in cart to proceed with payment.')
 
-                # Create Order
+                # 📦 Create Order
                 order = Order.objects.create(user=user, total_amount=0)
                 for item in products_in_cart:
                     ProductInOrder.objects.create(
@@ -553,7 +563,7 @@ def payment(request):
                 order.total_amount = final_price
                 order.save()
 
-                # Razorpay
+                # 💳 Razorpay order
                 order_currency = 'INR'
                 callback_url = 'http://' + str(get_current_site(request)) + "/handlerequest/"
                 notes = {'order-type': 'basic order from the website'}
@@ -685,6 +695,8 @@ def handlerequest(request):
                     'name': order_db.user.name,
                     'order': order_db,
                     'amount': order_db.total_amount,
+                    'address': order_db.user.customeradditional.get_full_address,
+                    'phone': order_db.user.phone,
                 }
                 html = template.render(data)
                 result = BytesIO()
@@ -724,6 +736,12 @@ def handlerequest(request):
                     seller_instance = Seller.objects.get(email=email)
 
                     grand_total = sum(item.price * item.quantity for item in items)
+
+                    if order_db.user.customeradditional:
+                        cust = order_db.user.customeradditional
+                        full_address = f"{cust.street_address}, {cust.city}, {cust.district}, {cust.state} - {cust.pincode}"
+                    else:
+                        full_address = ""
                     context = {
                         'grand_total': grand_total,
                         'seller_name': seller_instance.name,
@@ -732,7 +750,7 @@ def handlerequest(request):
                         'customer_name': order_db.user.name,
                         'customer_email': order_db.user.email,
                         'phone': order_db.user.phone,
-                        'address': order_db.user.customeradditional.address if order_db.user.customeradditional else '',
+                        'address': full_address,
                         'datetime_of_payment': localtime(order_db.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
                         'transaction_id': order_db.razorpay_payment_id,
                     }

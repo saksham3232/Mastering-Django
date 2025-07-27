@@ -182,7 +182,7 @@
         <p><strong>Customer Name:</strong> {{ order.user.name }}</p>
         <p><strong>Customer Email:</strong> {{ order.user.email }}</p>
         <p><strong>Phone:</strong> {{ order.user.phone }}</p>
-        <p><strong>Address:</strong> {{ order.user.customeradditional.address }}</p>
+        <p><strong>Address:</strong> {{ order.user.customeradditional.get_full_address }}</p>
 
         <p><strong>Order Date:</strong> {{ order.datetime_of_payment|date:"M d, Y" }}</p>
         <p><strong>Status:</strong> {{ order.get_status_display }}</p>

@@ -72,9 +72,6 @@
       width: 130px;
     }
 
-    #project div, #company div {
-      margin-bottom: 8px;
-    }
 
     table {
       width: 100%;
@@ -166,6 +163,8 @@
     <div id="project">
       <div><span>Client:</span> {{ name }}</div>
       <div><span>Email:</span> <a href="mailto:{{ user_email }}">{{ user_email }}</a></div>
+      <div><span>Phone:</span> {{ phone }}</div>
+      <div><span>Address:</span> {{ address }}</div>
       <div><span>Date:</span> {{ date }}</div>
       <div><span>Invoice ID:</span> {{ order_id }}</div>
       <div><span>Transaction ID:</span> {{ transaction_id }}</div>
