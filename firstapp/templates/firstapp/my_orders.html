@@ -1,6 +1,6 @@
 {% extends 'firstapp/basic.html' %}
 {% load static %}
-
+{% load myfilters %}
 {% block title %}My Orders{% endblock %}
 
 {% block css %}
@@ -146,11 +146,14 @@
         <!-- Ordered Products -->
         {% if order.productinorder_set.all %}
           <strong>Products:</strong>
-          <ul class="product-list">
-            {% for item in order.productinorder_set.all %}
-              <li>{{ item.product.product_name }} — ₹{{ item.price }} × {{ item.quantity }}</li>
-            {% endfor %}
-          </ul>
+            <ul class="product-list">
+              {% for item in order.productinorder_set.all %}
+                <li>
+                  {{ item.product.product_name }} — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.subtotal }}
+                </li>
+              {% endfor %}
+              <li><strong>Grand Total:</strong> ₹{{ order.grand_total }}</li>
+            </ul>
         {% endif %}
       </div>
     {% endfor %}

@@ -903,27 +903,33 @@ class PremiumProducts(PermissionRequiredMixin, ListView):
 
 @login_required
 def my_orders(request):
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).prefetch_related('productinorder_set__product')
 
-    # Auto-update status on view
     for order in orders:
+        # Auto-update status
         if not order.datetime_of_payment:
             continue
 
         days_passed = (timezone.now().date() - order.datetime_of_payment.date()).days
 
-        new_status = None
         if days_passed <= 1:
-            new_status = 1  # Not Packed
+            new_status = 1
         elif 2 <= days_passed <= 4:
-            new_status = 2  # Ready for Shipment
+            new_status = 2
         elif 5 <= days_passed <= 6:
-            new_status = 3  # Shipped
-        elif days_passed >= 7:
-            new_status = 4  # Delivered
+            new_status = 3
+        else:
+            new_status = 4
 
-        if new_status and order.status != new_status:
+        if order.status != new_status:
             order.status = new_status
             order.save()
+
+        # Add dynamic subtotal and grand total
+        grand_total = 0
+        for item in order.productinorder_set.all():
+            item.subtotal = item.price * item.quantity  # dynamic property
+            grand_total += item.subtotal
+        order.grand_total = grand_total  # dynamic property
 
     return render(request, 'firstapp/my_orders.html', {'orders': orders})
