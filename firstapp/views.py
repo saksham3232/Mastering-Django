@@ -899,7 +899,7 @@ class PremiumProducts(PermissionRequiredMixin, ListView):
 
 # Removing permission from group
 # new_group.permissions.remove(permission)
-
+from firstapp.notifications import handle_order_status_change
 
 @login_required
 def my_orders(request):
@@ -921,9 +921,8 @@ def my_orders(request):
         else:
             new_status = 4
 
-        if order.status != new_status:
-            order.status = new_status
-            order.save()
+        #✅ Status change only triggers email/notification
+        handle_order_status_change(order, new_status)
 
         # Add dynamic subtotal and grand total
         grand_total = 0
@@ -933,3 +932,10 @@ def my_orders(request):
         order.grand_total = grand_total  # dynamic property
 
     return render(request, 'firstapp/my_orders.html', {'orders': orders})
+
+from .models import Notification
+
+@login_required
+def notifications_view(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    return render(request, 'firstapp/notifications.html', {'notifications': notifications})

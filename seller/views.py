@@ -194,3 +194,52 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return Product.objects.filter(seller=self.request.user)
+
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.shortcuts import render
+from firstapp.models import Order, ProductInOrder
+from firstapp.notifications import handle_order_status_change
+@login_required
+def seller_orders(request):
+    # Fetch all product-in-order items for this seller
+    seller_items = ProductInOrder.objects.select_related('order', 'product').filter(product__seller=request.user)
+
+    # Group items by order
+    order_map = {}  # { order: [seller's products in this order] }
+    processed_orders = set()
+
+    for item in seller_items:
+        order = item.order
+        if order not in order_map:
+            order_map[order] = []
+        order_map[order].append(item)
+
+        # Update order status only once per order
+        if order.id not in processed_orders:
+            processed_orders.add(order.id)
+
+            if order.datetime_of_payment:
+                days_passed = (timezone.now().date() - order.datetime_of_payment.date()).days
+
+                if days_passed <= 1:
+                    new_status = 1
+                elif 2 <= days_passed <= 4:
+                    new_status = 2
+                elif 5 <= days_passed <= 6:
+                    new_status = 3
+                else:
+                    new_status = 4
+
+                # ✅ Status change only triggers email/notification
+                handle_order_status_change(order, new_status)
+
+    # Dynamically calculate seller’s share of total per order
+    for order, items in order_map.items():
+        grand_total = 0
+        for item in items:
+            item.subtotal = item.price * item.quantity
+            grand_total += item.subtotal
+        order.grand_total = grand_total
+
+    return render(request, 'seller/seller_orders.html', {'order_map': order_map})
