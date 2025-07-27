@@ -179,8 +179,9 @@
       <div class="order-card">
         <h5>Order ID: {{ order.order_id }}</h5>
         <h5>Transaction ID: {{ order.razorpay_payment_id }}</h5>
-        <p><strong>Order Date:</strong> {{ order.datetime_of_payment|date:"M d, Y" }}</p>
+        <p><strong>Order Date & Time:</strong> {{ order.datetime_of_payment|date:"M d, Y, h:i A" }}</p>
         <p><strong>Total Amount:</strong> ₹{{ order.total_amount }}</p>
+        <p><strong>Status:</strong> {{ order.get_status_display }}</p>
 
         <!-- Order Status Timeline -->
         <div class="status-timeline status-{{ order.status }}">

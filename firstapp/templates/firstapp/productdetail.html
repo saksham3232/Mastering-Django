@@ -130,7 +130,7 @@
       <p>No description provided for this product.</p>
     {% endif %}
 
-    <a class="btn-buy" href="{% host_url 'addtocart' id=product.product_id host 'www' %}">Add to Cart</a>
+    <a class="btn-buy" href="{% host_url 'addtocart' id=product.product_id host 'www' %}?next={{ request.get_full_path }}">Add to Cart</a>
 
     <div class="meta-info">
       <p><strong>Seller:</strong> {{ product.seller.name }}</p>

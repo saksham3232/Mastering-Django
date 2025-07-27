@@ -184,7 +184,7 @@
         <p><strong>Phone:</strong> {{ order.user.phone }}</p>
         <p><strong>Address:</strong> {{ order.user.customeradditional.get_full_address }}</p>
 
-        <p><strong>Order Date:</strong> {{ order.datetime_of_payment|date:"M d, Y" }}</p>
+        <p><strong>Order Date & Time:</strong> {{ order.datetime_of_payment|date:"M d, Y, h:i A" }}</p>
         <p><strong>Status:</strong> {{ order.get_status_display }}</p>
 
         <!-- Timeline -->
