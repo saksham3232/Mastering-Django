@@ -1,6 +1,6 @@
 from .models import Order
 from django.utils import timezone
-from firstapp.notifications import handle_order_status_change
+from firstapp.views import handle_order_status_change
 
 def update_order_statuses():
     orders = Order.objects.all()

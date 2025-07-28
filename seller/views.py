@@ -199,7 +199,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.shortcuts import render
 from firstapp.models import Order, ProductInOrder
-from firstapp.notifications import handle_order_status_change
+from firstapp.views import handle_order_status_change
 @login_required
 def seller_orders(request):
     # Fetch all product-in-order items for this seller
