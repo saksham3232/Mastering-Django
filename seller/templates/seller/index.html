@@ -1,7 +1,8 @@
 {% extends 'seller/basic.html' %}
 {% load static %}
+{% load hosts %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Seller Dashboard | MauryaShop{% endblock %}
 
 {% block css %}
 <style>
@@ -16,16 +17,17 @@
   .hero {
     background: linear-gradient(135deg, #4e54c8, #8f94fb);
     color: white;
-    padding: 80px 20px;
+    padding: 80px 20px 60px 20px;
     text-align: center;
     perspective: 1000px;
   }
 
   .hero h1 {
-    font-size: 3rem;
+    font-size: 2.8rem;
     font-weight: bold;
-    transform: rotateY(10deg);
+    transform: rotateY(7deg);
     transition: transform 0.5s ease;
+    margin-bottom: 0.8rem;
   }
 
   .hero h1:hover {
@@ -33,82 +35,150 @@
   }
 
   .hero p {
-    font-size: 1.25rem;
+    font-size: 1.18rem;
     margin-top: 10px;
     transform: translateZ(50px);
+    letter-spacing: 0.01em;
+  }
+
+  .dashboard-btn {
+    margin-top: 30px;
+    padding: 12px 32px;
+    font-size: 1.07rem;
+    color: #fff;
+    background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%);
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 18px rgba(78,84,200,0.13);
+    cursor: pointer;
+    transition: background 0.35s, transform 0.18s, box-shadow 0.25s;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+  }
+  .dashboard-btn:before {
+    content: "";
+    position: absolute;
+    left: -75%;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, #5f72bd 0%, #9f9fed 100%);
+    transition: all 0.5s;
+    z-index: 0;
+    opacity: 0;
+  }
+  .dashboard-btn:hover:before,
+  .dashboard-btn:focus:before {
+    left: 0;
+    width: 100%;
+    opacity: 1;
+  }
+  .dashboard-btn span {
+    position: relative;
+    z-index: 1;
+    transition: color 0.4s;
+  }
+  .dashboard-btn:hover,
+  .dashboard-btn:focus {
+    background: linear-gradient(90deg, #5f72bd 0%, #9f9fed 100%);
+    color: #fff;
+    transform: scale(1.04);
+    box-shadow: 0 8px 28px rgba(78,84,200,0.13), 0 4px 14px rgba(143,148,251,0.13);
+  }
+  .dashboard-btn:active {
+    transform: scale(0.97);
   }
 
   .about-section {
     background-color: white;
-    padding: 60px 20px;
+    padding: 48px 22px;
     margin: 40px auto 60px auto;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     max-width: 1200px;
   }
 
-  .about-section:hover {
-    transform: scale(1.01);
-  }
-
   .about-section h2 {
-    font-size: 2rem;
-    margin-bottom: 20px;
+    font-size: 1.65rem;
+    margin-bottom: 19px;
     color: #4e54c8;
+    font-weight: 600;
   }
 
   .about-section p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 20px;
+    font-size: 1.08rem;
+    line-height: 1.75;
+    margin-bottom: 18px;
   }
 
-  .projects-wrapper {
+  .features-wrapper {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 24px;
     justify-content: center;
-    perspective: 1200px;
-    margin-top: 30px;
+    margin: 38px 0 30px 0;
   }
-
-  .project-card {
-    width: 280px;
+  .feature-card {
     background: linear-gradient(135deg, #e3f2fd, #ffffff);
     border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    padding: 20px;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+    width: 270px;
+    padding: 28px 18px;
+    text-align: center;
+    transition: transform 0.32s;
   }
-
-  .project-card:hover {
-    transform: rotateY(10deg) rotateX(5deg) scale(1.05);
+  .feature-card:hover {
+    transform: scale(1.045) translateY(-3px);
   }
-
-  .project-card h3 {
+  .feature-card h3 {
     color: #4e54c8;
     margin-bottom: 10px;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+  .feature-card p {
+    font-size: 0.99rem;
+    color: #444;
   }
 
-  .project-card p {
-    font-size: 0.95rem;
-    line-height: 1.5;
+  .stats-section {
+    text-align: center;
+    margin: 48px 0 15px 0;
+    color: #4e54c8;
+  }
+  .stats-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 18px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(78,84,200,0.07);
+    width: 150px;
+    padding: 20px;
+  }
+  .stat-value {
+    font-size: 1.35rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #31317c;
+  }
+  .stat-label {
+    font-size: 0.98rem;
+    color: #5d5fa6;
   }
 
-  @media (max-width: 768px) {
-    .hero h1 {
-      font-size: 2.2rem;
+  @media (max-width: 900px) {
+    .features-wrapper, .stats-wrapper {
+      flex-direction: column;
+      align-items: center;
     }
-
-    .hero p, .about-section p {
-      font-size: 1rem;
-    }
-
     .about-section {
-      padding: 40px 15px;
+      padding: 28px 8px;
     }
   }
 
@@ -126,50 +196,74 @@
 {% block body %}
 <div class="hero">
   <h1>Welcome to MauryaShop – Seller Portal</h1>
-  <p>Managed by Saksham Maurya – developer, innovator, and problem-solver.</p>
+  <p>Manage your products, orders, and performance analytics with ease.</p>
+  <a href="{% host_url 'seller-dashboard' host 'services' %}">
+    <button class="dashboard-btn"><span>Go to Dashboard</span></button>
+  </a>
 </div>
 
 <div class="container about-section">
-  <h2>About the Seller</h2>
-  <p>This portal is designed for managing product listings, tracking orders, and analyzing performance metrics for sellers on MauryaShop. It’s built with Django, Bootstrap, and a custom responsive design.</p>
-
-  <h2>Seller Features</h2>
-  <p><strong>Product Management:</strong> Add, update, or remove product listings effortlessly.<br>
-     <strong>Order Tracking:</strong> Stay updated with real-time order statuses.<br>
-     <strong>Analytics:</strong> View reports and metrics for performance optimization.</p>
-
-  <h2>Technologies Used</h2>
-  <p><strong>Frontend:</strong> HTML, CSS, Bootstrap<br>
-     <strong>Backend:</strong> Python, Django<br>
-     <strong>Database:</strong> SQLite (development)<br>
-     <strong>Tools:</strong> Git, GitHub, Django Admin</p>
-
-  {% comment %} <h2>Seller Dashboard Projects</h2>
-  <div class="projects-wrapper">
-    <div class="project-card">
-      <h3>Inventory Tracker</h3>
-      <p>Track product stock levels and receive low-stock alerts automatically.</p>
+  <h2>About MauryaShop Seller Portal</h2>
+  <p>
+    MauryaShop Seller Portal empowers you to manage your online business with modern tools and actionable insights.
+    Track inventory, process orders, analyze sales, and grow your brand—all in one secure place.
+  </p>
+  <div class="features-wrapper">
+    <div class="feature-card">
+      <h3>Product Management</h3>
+      <p>Add, edit, or remove listings effortlessly. Stay on top of your inventory and highlight your bestsellers.</p>
     </div>
-    <div class="project-card">
-      <h3>Order Insights</h3>
-      <p>Analyze your most sold products and order trends with graphs and reports.</p>
+    <div class="feature-card">
+      <h3>Order Tracking</h3>
+      <p>Monitor orders in real time, update statuses, and ensure timely deliveries for your customers.</p>
     </div>
-    <div class="project-card">
-      <h3>Profile & Payments</h3>
-      <p>Manage payout settings and keep your profile information up-to-date.</p>
+    <div class="feature-card">
+      <h3>Analytics & Reports</h3>
+      <p>Visualize your sales, conversion rates, and inventory stats with clear dashboards and downloadable reports.</p>
     </div>
-    <div class="project-card">
+    <div class="feature-card">
+      <h3>Payout Management</h3>
+      <p>Track your earnings, manage your bank details, and view your payout history securely.</p>
+    </div>
+    <div class="feature-card">
       <h3>Automated Notifications</h3>
-      <p>Receive email or SMS updates for important order and product changes.</p>
+      <p>Receive instant alerts for new orders, low stock, and account activity via email or SMS.</p>
     </div>
-  </div> {% endcomment %}
+  </div>
+</div>
 
-  <h2>Vision</h2>
-  <p>Our vision is to empower sellers with easy-to-use, scalable tools that help grow their online business. We believe in data-driven decisions and intuitive user experiences.</p>
+<section class="stats-section">
+  <h2>Your Seller Stats</h2>
+  <div class="stats-wrapper">
+    <div class="stat-card">
+      <div class="stat-value">150+</div>
+      <div class="stat-label">Products Listed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">1200+</div>
+      <div class="stat-label">Orders Processed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">98%</div>
+      <div class="stat-label">On-time Delivery</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">4.9/5</div>
+      <div class="stat-label">Seller Rating</div>
+    </div>
+  </div>
+</section>
+
+<div class="container about-section">
+  <h2>Our Vision</h2>
+  <p>
+    To empower every seller with intuitive, scalable, and data-driven tools for e-commerce success.
+    MauryaShop is committed to your growth with reliable technology and world-class support.
+  </p>
 </div>
 
 <footer>
-  <p>&copy; 2025 Saksham Maurya. All rights reserved. Seller Portal.</p>
+  <p>&copy; 2025 MauryaShop. All rights reserved. Seller Portal.</p>
 </footer>
 {% endblock %}
 
