@@ -134,3 +134,9 @@ class CustomerCheckoutForm(forms.ModelForm):
                 'placeholder': 'Pincode'
             }),
         }
+
+
+from django import forms
+
+class CancelOrderForm(forms.Form):
+    reason = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), label="Reason for cancellation")

@@ -23,6 +23,8 @@ urlpatterns = [
     path('displaycart/', views.DisplayCart.as_view(), name='displaycart'),
     path('updatecart/<int:pk>/', views.UpdateCart.as_view(), name='updatecart'),
     path('deletefromcart/<int:pk>/', views.DeleteFromCart.as_view(), name='deletefromcart'),
+    path('cancel-order/<int:order_id>/', views.cancel_order, name='cancel_order'),
+
 
     # Authentication Endpoints
     path('signup/', views.RegisterView.as_view(), name='signup'),

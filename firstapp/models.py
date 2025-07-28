@@ -284,6 +284,7 @@ class Order(models.Model):
         (2, 'Ready for Shipment'),
         (3, 'Shipped'),
         (4, 'Delivered'),
+        (5, 'Cancelled')
     )
     payment_status_choices = (
         (1, 'SUCCESS'),
@@ -310,8 +311,13 @@ class Order(models.Model):
     
     def __str__(self):
         return self.user.email + " - " + str(self.id)
-
-
+    
+    def cancel_order(self):
+        if self.status in [1, 2]:  # Can cancel if Not Packed or Ready to Ship
+            self.status = 5  # 5 = Cancelled
+            self.save()
+            return True
+        return False
 
 
 class ProductInOrder(models.Model):

@@ -27,6 +27,9 @@ def create_in_app_notification(order):
 
 
 def handle_order_status_change(order, new_status):
+    if order.status == 5:  # 🚫 Do not overwrite cancelled orders
+        return False
+
     if order.status != new_status:
         order.status = new_status
         order.save()

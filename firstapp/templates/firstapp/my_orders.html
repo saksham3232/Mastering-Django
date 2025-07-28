@@ -118,6 +118,23 @@
     color: white;
   }
 
+  .cancel-btn {
+    background-color: #d9534f;
+    color: white;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .cancel-btn:hover {
+    background-color: #c9302c;
+    transform: scale(1.05);
+  }
+
   @media (max-width: 768px) {
     .status-timeline {
       flex-direction: column;
@@ -143,12 +160,11 @@
       align-items: flex-start;
     }
 
-    .view-btn {
+    .view-btn, .cancel-btn {
       margin-top: 5px;
     }
   }
 
-  /* Progress Line Color When Order Status Advances */
   .status-timeline.status-2::before {
     background: linear-gradient(to right, #4e54c8 0%, #4e54c8 33%, #ccc 33%);
   }
@@ -167,6 +183,15 @@
     border: none;
     margin-top: 10px;
   }
+
+  .order-cancelled {
+    background: linear-gradient(135deg, #ffe5e5, #ffffff);
+    border: 2px solid #e74c3c;
+  }
+  .order-delivered {
+    background: linear-gradient(135deg, #e6ffed, #ffffff);
+    border: 2px solid #27ae60;
+  }
 </style>
 {% endblock %}
 
@@ -176,7 +201,7 @@
 
   {% if orders %}
     {% for order in orders %}
-      <div class="order-card">
+      <div class="order-card {% if order.status == 5 %}order-cancelled{% elif order.status == 4 %}order-delivered{% endif %}">
         <h5>Order ID: {{ order.order_id }}</h5>
         <h5>Transaction ID: {{ order.razorpay_payment_id }}</h5>
         <p><strong>Order Date & Time:</strong> {{ order.datetime_of_payment|date:"M d, Y, h:i A" }}</p>
@@ -207,24 +232,33 @@
         {% if order.productinorder_set.all %}
           <strong>Products:</strong>
           <ul class="product-list">
-            {% for item in order.productinorder_set.all %}
-              <li>
-                <div class="product-info">
-                  <a href="{% host_url 'productdetail' pk=item.product.pk host 'www' %}" style="text-decoration: none; color: #4e54c8; font-weight: bold;">
-                    {{ item.product.product_name }}
-                  </a>
-                  — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.subtotal }}
-                </div>
-                <a href="{% host_url 'productdetail' pk=item.product.pk host 'www' %}" class="view-btn">
-                  View Product
+          {% for item in order.productinorder_set.all %}
+            <li>
+              <div class="product-info">
+                <a href="{% host_url 'productdetail' pk=item.product.pk host 'www' %}" style="text-decoration: none; color: #4e54c8; font-weight: bold;">
+                  {{ item.product.product_name }}
                 </a>
-              </li>
-            {% endfor %}
-            <li class="subtotal-line">
-              {% comment %} <span><strong>Grand Total:</strong> ₹{{ order.grand_total }}</span> {% endcomment %}
-              <strong>Grand Total:</strong>&nbsp;₹{{ order.grand_total }}
+                — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.price|multiply:item.quantity|floatformat:2 }}
+              </div>
+              <a href="{% host_url 'productdetail' pk=item.product.pk host 'www' %}" class="view-btn">
+                View Product
+              </a>
             </li>
+          {% endfor %}
+          <li class="subtotal-line">
+            <strong>Grand Total:</strong>&nbsp;₹{{ order.total_amount|floatformat:2 }}
+          </li>
           </ul>
+        {% endif %}
+
+        <!-- Cancel Button or Cancellation Message -->
+        {% if order.status < 3 %}
+          <form method="post" action="{% url 'cancel_order' order.id %}">
+            {% csrf_token %}
+            <button type="submit" class="cancel-btn">Cancel Order</button>
+          </form>
+        {% elif order.status == 5 %}
+          <p style="color: red; font-weight: bold;">Order Cancelled</p>
         {% endif %}
       </div>
     {% endfor %}

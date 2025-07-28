@@ -86,7 +86,7 @@
     padding-left: 15px;
   }
 
-  .product-list li {
+  .product-list li:not(:last-child) {
     margin-bottom: 10px;
     padding-bottom: 10px;
     border-bottom: 1px dashed #ccc;
@@ -138,7 +138,7 @@
       transform: translateX(-50%);
     }
 
-    .product-list li {
+    .product-list li:not(:last-child) {
       flex-direction: column;
       align-items: flex-start;
     }
@@ -160,11 +160,21 @@
     background: #4e54c8;
   }
 
-  .product-list .subtotal-line {
+  .subtotal-line {
     justify-content: flex-start !important;
     font-weight: bold;
     border: none;
     margin-top: 10px;
+  }
+
+  .order-cancelled {
+    background: linear-gradient(135deg, #ffe5e5, #ffffff);
+    border: 2px solid #e74c3c;
+  }
+
+  .order-delivered {
+    background: linear-gradient(135deg, #e6ffed, #ffffff);
+    border: 2px solid #27ae60;
   }
 </style>
 {% endblock %}
@@ -175,7 +185,7 @@
 
   {% if order_map %}
     {% for order, items in order_map.items %}
-      <div class="order-card">
+      <div class="order-card {% if order.status == 5 %}order-cancelled{% elif order.status == 4 %}order-delivered{% endif %}">
         <h5>Order ID: {{ order.order_id }}</h5>
         <h5>Transaction ID: {{ order.razorpay_payment_id }}</h5>
 
@@ -218,15 +228,17 @@
                 </a>
                 — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.subtotal }}
               </div>
-              <a href="{% url 'productdetail' pk=item.product.pk %}" class="view-btn">
-                View Product
-              </a>
+              <a href="{% url 'productdetail' pk=item.product.pk %}" class="view-btn">View Product</a>
             </li>
           {% endfor %}
           <li class="subtotal-line">
             <strong>Subtotal (your products):</strong>&nbsp;₹{{ order.grand_total }}
           </li>
         </ul>
+
+        {% if order.status == 5 %}
+          <p style="color: red; font-weight: bold;">Order Cancelled</p>
+        {% endif %}
       </div>
     {% endfor %}
   {% else %}

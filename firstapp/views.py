@@ -927,8 +927,8 @@ def my_orders(request):
 
     for order in orders:
         # Auto-update status
-        if not order.datetime_of_payment:
-            continue
+        if not order.datetime_of_payment or order.status == 5:
+            continue  # 🚫 Skip if no payment time or already cancelled
 
         days_passed = (timezone.now().date() - order.datetime_of_payment.date()).days
 
@@ -938,7 +938,7 @@ def my_orders(request):
             new_status = 2
         elif 5 <= days_passed <= 6:
             new_status = 3
-        else:
+        elif days_passed >= 7:
             new_status = 4
 
         #✅ Status change only triggers email/notification
@@ -959,3 +959,126 @@ from .models import Notification
 def notifications_view(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
     return render(request, 'firstapp/notifications.html', {'notifications': notifications})
+
+
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.utils.timezone import localtime
+from django.contrib.auth.decorators import login_required
+from io import BytesIO
+from xhtml2pdf import pisa
+from .models import Order, ProductInOrder, Cart, ProductInCart, Seller
+from .forms import CancelOrderForm
+from django.conf import settings
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if request.method == "POST":
+        form = CancelOrderForm(request.POST)
+        if form.is_valid():
+            reason = form.cleaned_data['reason']
+
+            if order.cancel_order():  # Assumes this marks the order as canceled
+                messages.success(request, f"Order #{order.order_id} cancelled successfully.")
+
+                # ▶ Generate customer cancellation invoice
+                customer_data = {
+                    'order_id': order.order_id,
+                    'transaction_id': order.razorpay_payment_id,
+                    'user_email': order.user.email,
+                    'date': localtime(order.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
+                    'name': order.user.name,
+                    'phone': order.user.phone,
+                    'address': order.user.customeradditional.get_full_address if order.user.customeradditional else "",
+                    'order': order,
+                    'amount': order.total_amount,
+                    'reason': reason,
+                }
+                html = render_to_string('firstapp/payment/cancellation_invoice.html', customer_data)
+                result = BytesIO()
+                pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+                pdf = result.getvalue()
+                filename = f"CancellationInvoice_{order.order_id}.pdf"
+
+                # ▶ Send email to customer
+                email_subject = f"Order #{order.order_id} Cancelled – Invoice Attached"
+                email_html_message = render_to_string('firstapp/payment/email_cancellation.html', {
+                    'user': order.user,
+                    'order': order,
+                    'reason': reason
+                })
+
+                email_obj = EmailMultiAlternatives(
+                    subject=email_subject,
+                    body="Your order has been cancelled. Please find attached the invoice.",
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[order.user.email]
+                )
+                email_obj.attach_alternative(email_html_message, "text/html")
+                email_obj.attach(filename, pdf, 'application/pdf')
+                email_obj.send(fail_silently=False)
+
+                # ▶ Notify each seller involved
+                order_items = ProductInOrder.objects.filter(order=order)
+                sellers_handled = set()
+
+                for item in order_items:
+                    seller = item.product.seller
+                    if seller and seller.email not in sellers_handled:
+                        seller_items = order_items.filter(product__seller=seller)
+                        seller_total = sum(i.price * i.quantity for i in seller_items)
+                        cust = order.user.customeradditional
+
+                        seller_data = {
+                            'order_id': order.order_id,
+                            'transaction_id': order.razorpay_payment_id,
+                            'customer_name': order.user.name,
+                            'customer_email': order.user.email,
+                            'phone': order.user.phone,
+                            'address': f"{cust.street_address}, {cust.city}, {cust.district}, {cust.state} - {cust.pincode}" if cust else "",
+                            'datetime_of_payment': localtime(order.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
+                            'products': seller_items,
+                            'grand_total': seller_total,
+                            'reason': reason,
+                            'seller_name': seller.name,
+                        }
+
+                        # ▶ Generate PDF invoice for seller
+                        html = render_to_string('firstapp/payment/seller_cancellation_invoice.html', seller_data)
+                        result = BytesIO()
+                        pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+                        seller_pdf = result.getvalue()
+                        seller_filename = f"SellerCancellationInvoice_{order.order_id}_{seller.name.replace(' ', '_')}.pdf"
+
+                        # ▶ Send email to seller
+                        seller_subject = f"Order #{order.order_id} Cancelled by Customer"
+                        seller_email_html = render_to_string('firstapp/payment/email_seller_cancellation.html', seller_data)
+                        plain_text = strip_tags(seller_email_html)
+
+                        email = EmailMultiAlternatives(
+                            subject=seller_subject,
+                            body=plain_text,
+                            from_email=settings.EMAIL_HOST_USER,
+                            to=[seller.email],
+                        )
+                        email.attach_alternative(seller_email_html, "text/html")
+                        email.attach(seller_filename, seller_pdf, 'application/pdf')
+                        email.send(fail_silently=False)
+
+                        sellers_handled.add(seller.email)
+
+                return redirect('orders')
+
+            else:
+                messages.warning(request, f"Order #{order.order_id} cannot be cancelled (already shipped or delivered).")
+                return redirect('orders')
+
+    else:
+        form = CancelOrderForm()
+
+    return render(request, 'firstapp/order_cancel.html', {'order': order, 'form': form})
