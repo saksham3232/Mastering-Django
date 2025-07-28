@@ -14,15 +14,24 @@
           <tr style="background-color: #4e54c8; color: #fff;">
             <th style="padding: 10px; text-align: left;">Product</th>
             <th style="padding: 10px; text-align: center;">Quantity</th>
+            <th style="padding: 10px; text-align: right;">Price</th>
+            <th style="padding: 10px; text-align: right;">Subtotal</th>
           </tr>
         </thead>
         <tbody>
           {% for item in products %}
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 10px;">{{ item.product.product_name }}</td>
-            <td style="padding: 10px; text-align: center;">{{ item.quantity }}</td>
-          </tr>
+            {% widthratio item.price 1 item.quantity as item_total %}
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 10px;">{{ item.product.product_name }}</td>
+              <td style="padding: 10px; text-align: center;">{{ item.quantity }}</td>
+              <td style="padding: 10px; text-align: right;">₹{{ item.price }}</td>
+              <td style="padding: 10px; text-align: right;">₹{{ item_total }}</td>
+            </tr>
           {% endfor %}
+          <tr style="background-color: #f0f2ff;">
+            <td colspan="3" style="padding: 10px; text-align: right;"><strong>Grand Total:</strong></td>
+            <td style="padding: 10px; text-align: right;"><strong>₹{{ grand_total }}</strong></td>
+          </tr>
         </tbody>
       </table>
 
@@ -46,7 +55,7 @@
 
       <p style="margin-top: 30px; font-size: 14px; color: #777;">
         Thank you,<br>
-        <strong>Your Website Team</strong>
+        <strong>MauryaShop Team</strong>
       </p>
 
     </div>

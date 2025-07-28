@@ -488,15 +488,14 @@ class DeleteFromCart(LoginRequiredMixin, DeleteView):
 
 
 # Adding payment gateway
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 from django.http import HttpResponse
-from django.conf import settings
+from django.db import transaction
 from django.contrib.sites.shortcuts import get_current_site
-
-from .models import Cart, ProductInCart, Order, ProductInOrder, CustomerAdditional
+from django.conf import settings
+from .models import CustomerAdditional, Cart, ProductInCart, Order, ProductInOrder
 from .forms import CustomerCheckoutForm
-
 import razorpay
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -510,7 +509,7 @@ def payment(request):
     except CustomerAdditional.DoesNotExist:
         customer_additional = None
 
-    # 🟦 Initial data for form prefill
+    # 🟦 Prefill initial data
     initial_data = {
         'phone': user.phone or '',
         'street_address': customer_additional.street_address if customer_additional else '',
@@ -524,80 +523,86 @@ def payment(request):
         form = CustomerCheckoutForm(request.POST)
 
         if form.is_valid():
-            # 🟢 Save phone
-            user.phone = form.cleaned_data['phone']
-            user.save()
-
-            # 🟢 Save or update address fields
-            CustomerAdditional.objects.update_or_create(
-                user=user,
-                defaults={
-                    'street_address': form.cleaned_data['street_address'],
-                    'city': form.cleaned_data['city'],
-                    'district': form.cleaned_data['district'],
-                    'state': form.cleaned_data['state'],
-                    'pincode': form.cleaned_data['pincode'],
-                }
-            )
-
             try:
-                # 🛒 Cart processing
-                cart = Cart.objects.get(user=user)
-                products_in_cart = ProductInCart.objects.filter(cart=cart)
-                final_price = 0
+                with transaction.atomic():
+                    # 🟢 Save phone
+                    user.phone = form.cleaned_data['phone']
+                    user.save()
 
-                if not products_in_cart.exists():
-                    return HttpResponse('No products in cart to proceed with payment.')
-
-                # 📦 Create Order
-                order = Order.objects.create(user=user, total_amount=0)
-                for item in products_in_cart:
-                    ProductInOrder.objects.create(
-                        order=order,
-                        product=item.product,
-                        quantity=item.quantity,
-                        price=item.product.price
+                    # 🟢 Save or update address
+                    CustomerAdditional.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            'street_address': form.cleaned_data['street_address'],
+                            'city': form.cleaned_data['city'],
+                            'district': form.cleaned_data['district'],
+                            'state': form.cleaned_data['state'],
+                            'pincode': form.cleaned_data['pincode'],
+                        }
                     )
-                    final_price += item.product.price * item.quantity
 
-                order.total_amount = final_price
-                order.save()
+                    # 🛒 Cart check
+                    cart = Cart.objects.get(user=user)
+                    products_in_cart = ProductInCart.objects.filter(cart=cart)
 
-                # 💳 Razorpay order
-                order_currency = 'INR'
-                callback_url = 'http://' + str(get_current_site(request)) + "/handlerequest/"
-                notes = {'order-type': 'basic order from the website'}
+                    if not products_in_cart.exists():
+                        return HttpResponse('No products in cart to proceed with payment.')
 
-                razorpay_order = razorpay_client.order.create(dict(
-                    amount=int(final_price * 100),
-                    currency=order_currency,
-                    notes=notes,
-                    receipt=order.order_id,
-                    payment_capture='0'
-                ))
+                    # 📦 Create order
+                    order = Order.objects.create(user=user, total_amount=0)
+                    final_price = 0
 
-                order.razorpay_order_id = razorpay_order['id']
-                order.save()
+                    for item in products_in_cart:
+                        ProductInOrder.objects.create(
+                            order=order,
+                            product=item.product,
+                            quantity=item.quantity,
+                            price=item.product.price
+                        )
+                        final_price += item.product.price * item.quantity
 
-                return render(request, 'firstapp/payment/paymentsummaryrazorpay.html', {
-                    'order': order,
-                    'order_id': razorpay_order['id'],
-                    'orderId': order.order_id,
-                    'final_price': final_price,
-                    'razorpay_merchant_id': settings.RAZORPAY_KEY_ID,
-                    'callback_url': callback_url
-                })
+                    order.total_amount = final_price
+                    order.save()
+
+                    # 💳 Razorpay order
+                    order_currency = 'INR'
+                    callback_url = 'http://' + str(get_current_site(request)) + "/handlerequest/"
+                    notes = {'order-type': 'basic order from the website'}
+
+                    razorpay_order = razorpay_client.order.create(dict(
+                        amount=int(final_price * 100),
+                        currency=order_currency,
+                        notes=notes,
+                        receipt=order.order_id,
+                        payment_capture='0'
+                    ))
+
+                    order.razorpay_order_id = razorpay_order['id']
+                    order.save()
+
+                    # ✅ Render payment summary
+                    return render(request, 'firstapp/payment/paymentsummaryrazorpay.html', {
+                        'order': order,
+                        'order_id': razorpay_order['id'],
+                        'orderId': order.order_id,
+                        'final_price': final_price,
+                        'razorpay_merchant_id': settings.RAZORPAY_KEY_ID,
+                        'callback_url': callback_url
+                    })
 
             except Exception as e:
-                print("Payment error:", e)
-                return HttpResponse('Error during payment setup.')
-
+                print("🔴 Transaction error:", e)
+                return HttpResponse('Error during payment setup. Your order was not placed.')
+        else:
+            # ❌ Form invalid: show form with errors
+            print("Form validation failed:", form.errors)  # Optional debug log
+            return render(request, 'firstapp/checkoutdetails.html', {'form': form})
+    
     else:
         # First-time GET request
         form = CustomerCheckoutForm(initial=initial_data)
 
     return render(request, 'firstapp/checkoutdetails.html', {'form': form})
-
 
 
 # for generating pdf invoice
@@ -630,20 +635,16 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template, render_to_string
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from io import BytesIO
 from xhtml2pdf import pisa
-import logging
-import os
-from django.utils.timezone import localtime
-from razorpay.errors import SignatureVerificationError, BadRequestError
-from .models import Order, Cart, ProductInCart
-from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 from collections import defaultdict
-from .models import Seller, ProductInOrder
+from razorpay.errors import SignatureVerificationError
+from .models import Order, Cart, ProductInCart, Seller, ProductInOrder
+from django.conf import settings
+from django.utils.html import strip_tags
+from django.db import transaction
+
 
 @csrf_exempt
 def handlerequest(request):
@@ -668,11 +669,13 @@ def handlerequest(request):
             except Order.DoesNotExist:
                 return HttpResponse('Order not found in the database.')
 
-            order_db.razorpay_payment_id = payment_id
-            order_db.razorpay_signature = signature
-            order_db.save()
+            # 🔒 Ensure ACID compliance
+            with transaction.atomic():
+                # Store payment details
+                order_db.razorpay_payment_id = payment_id
+                order_db.razorpay_signature = signature
+                order_db.save()
 
-            try:
                 # Razorpay signature verification
                 razorpay_client.utility.verify_payment_signature(params_dict)
 
@@ -684,8 +687,7 @@ def handlerequest(request):
                 order_db.payment_status = 1
                 order_db.save()
 
-
-                # For generating invoice pdf
+                # Generate PDF invoice
                 template = get_template('firstapp/payment/invoice.html')
                 data = {
                     'order_id': order_db.order_id,
@@ -704,6 +706,7 @@ def handlerequest(request):
                 pdf = result.getvalue()
                 filename = "Invoice_" + data['order_id'] + ".pdf"
 
+                # Send invoice to user
                 mail_subject = 'Your Order Invoice'
                 message = render_to_string('firstapp/payment/emailinvoice.html', {
                     'user': order_db.user,
@@ -720,21 +723,19 @@ def handlerequest(request):
                 email.attach(filename, pdf, 'application/pdf')
                 email.send(fail_silently=False)
 
+                # Notify sellers
                 seller_emails = set()
                 seller_products = defaultdict(list)
 
-                # Group products by seller
                 for item in ProductInOrder.objects.filter(order=order_db):
                     seller = item.product.seller
                     if seller and seller.email:
                         seller_emails.add(seller.email)
                         seller_products[seller.email].append(item)
 
-                # Send email to each seller
                 for email in seller_emails:
                     items = seller_products[email]
                     seller_instance = Seller.objects.get(email=email)
-
                     grand_total = sum(item.price * item.quantity for item in items)
 
                     if order_db.user.customeradditional:
@@ -742,6 +743,7 @@ def handlerequest(request):
                         full_address = f"{cust.street_address}, {cust.city}, {cust.district}, {cust.state} - {cust.pincode}"
                     else:
                         full_address = ""
+
                     context = {
                         'grand_total': grand_total,
                         'seller_name': seller_instance.name,
@@ -755,18 +757,17 @@ def handlerequest(request):
                         'transaction_id': order_db.razorpay_payment_id,
                     }
 
-                    # Render HTML message
-                    html_message = render_to_string('firstapp/seller_notification.html', context)
+                    # Render HTML + PDF for seller
+                    html_message = render_to_string('firstapp/payment/seller_notification.html', context)
                     plain_message = strip_tags(html_message)
 
-                    # ✅ Generate seller-specific PDF invoice
                     pdf_html = render_to_string('firstapp/payment/seller_invoice.html', context)
                     result = BytesIO()
-                    pdf_status = pisa.pisaDocument(BytesIO(pdf_html.encode("utf-8")), result)
+                    pisa.pisaDocument(BytesIO(pdf_html.encode("utf-8")), result)
                     pdf = result.getvalue()
                     filename = f"SellerInvoice_{order_db.order_id}_{seller_instance.name.replace(' ', '_')}.pdf"
 
-                    # Send Email with PDF attached
+                    # Send email to seller
                     email_obj = EmailMultiAlternatives(
                         subject=f'New Order Received: {order_db.order_id}',
                         body=plain_message,
@@ -777,26 +778,25 @@ def handlerequest(request):
                     email_obj.attach(filename, pdf, 'application/pdf')
                     email_obj.send(fail_silently=False)
 
-
-                # ✅ EMPTY THE CART
+                # ✅ Clear cart after successful payment
                 cart = Cart.objects.get(user=order_db.user)
                 ProductInCart.objects.filter(cart=cart).delete()
 
-                return render(request, 'firstapp/payment/paymentsuccess.html', 
-                              {'id': order_db.id,}
-                            )
+            return render(request, 'firstapp/payment/paymentsuccess.html', {
+                'id': order_db.id,
+            })
 
-
-            except SignatureVerificationError:
-                order_db.payment_status = 2
-                order_db.save()
-                return render(request, 'firstapp/payment/paymentfailed.html')
+        except SignatureVerificationError:
+            order_db.payment_status = 2
+            order_db.save()
+            return render(request, 'firstapp/payment/paymentfailed.html')
 
         except Exception as e:
             print("🔴 Unexpected Error in payment:", e)
             return HttpResponse('Error occurred while processing the payment. Please try again.')
 
     return HttpResponse('Invalid request method.')
+
 
 from django.views import View
 
@@ -973,6 +973,7 @@ from xhtml2pdf import pisa
 from .models import Order, ProductInOrder, Cart, ProductInCart, Seller
 from .forms import CancelOrderForm
 from django.conf import settings
+from django.db import transaction, DatabaseError
 
 @login_required
 def cancel_order(request, order_id):
@@ -983,99 +984,108 @@ def cancel_order(request, order_id):
         if form.is_valid():
             reason = form.cleaned_data['reason']
 
-            if order.cancel_order():  # Assumes this marks the order as canceled
-                messages.success(request, f"Order #{order.order_id} cancelled successfully.")
+            try:
+                with transaction.atomic():
+                    if not order.cancel_order():
+                        messages.warning(request, f"Order #{order.order_id} cannot be cancelled (already shipped or delivered).")
+                        return redirect('orders')
 
-                # ▶ Generate customer cancellation invoice
-                customer_data = {
-                    'order_id': order.order_id,
-                    'transaction_id': order.razorpay_payment_id,
-                    'user_email': order.user.email,
-                    'date': localtime(order.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
-                    'name': order.user.name,
-                    'phone': order.user.phone,
-                    'address': order.user.customeradditional.get_full_address if order.user.customeradditional else "",
-                    'order': order,
-                    'amount': order.total_amount,
-                    'reason': reason,
-                }
-                html = render_to_string('firstapp/payment/cancellation_invoice.html', customer_data)
-                result = BytesIO()
-                pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
-                pdf = result.getvalue()
-                filename = f"CancellationInvoice_{order.order_id}.pdf"
+                    messages.success(request, f"Order #{order.order_id} cancelled successfully.")
 
-                # ▶ Send email to customer
-                email_subject = f"Order #{order.order_id} Cancelled – Invoice Attached"
-                email_html_message = render_to_string('firstapp/payment/email_cancellation.html', {
-                    'user': order.user,
-                    'order': order,
-                    'reason': reason
-                })
+                    # ▶ Generate customer cancellation invoice
+                    customer_data = {
+                        'order_id': order.order_id,
+                        'transaction_id': order.razorpay_payment_id,
+                        'user_email': order.user.email,
+                        'date': localtime(order.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
+                        'name': order.user.name,
+                        'phone': order.user.phone,
+                        'address': order.user.customeradditional.get_full_address if order.user.customeradditional else "",
+                        'order': order,
+                        'amount': order.total_amount,
+                        'reason': reason,
+                    }
+                    html = render_to_string('firstapp/payment/cancellation_invoice.html', customer_data)
+                    result = BytesIO()
+                    pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+                    if pisa_status.err:
+                        raise Exception("Failed to generate PDF for customer.")
+                    pdf = result.getvalue()
+                    filename = f"CancellationInvoice_{order.order_id}.pdf"
 
-                email_obj = EmailMultiAlternatives(
-                    subject=email_subject,
-                    body="Your order has been cancelled. Please find attached the invoice.",
-                    from_email=settings.EMAIL_HOST_USER,
-                    to=[order.user.email]
-                )
-                email_obj.attach_alternative(email_html_message, "text/html")
-                email_obj.attach(filename, pdf, 'application/pdf')
-                email_obj.send(fail_silently=False)
+                    # ▶ Send email to customer
+                    email_subject = f"Order #{order.order_id} Cancelled – Invoice Attached"
+                    email_html_message = render_to_string('firstapp/payment/email_cancellation.html', {
+                        'user': order.user,
+                        'order': order,
+                        'reason': reason
+                    })
 
-                # ▶ Notify each seller involved
-                order_items = ProductInOrder.objects.filter(order=order)
-                sellers_handled = set()
+                    email_obj = EmailMultiAlternatives(
+                        subject=email_subject,
+                        body="Your order has been cancelled. Please find attached the invoice.",
+                        from_email=settings.EMAIL_HOST_USER,
+                        to=[order.user.email]
+                    )
+                    email_obj.attach_alternative(email_html_message, "text/html")
+                    email_obj.attach(filename, pdf, 'application/pdf')
+                    email_obj.send(fail_silently=False)
 
-                for item in order_items:
-                    seller = item.product.seller
-                    if seller and seller.email not in sellers_handled:
-                        seller_items = order_items.filter(product__seller=seller)
-                        seller_total = sum(i.price * i.quantity for i in seller_items)
-                        cust = order.user.customeradditional
+                    # ▶ Notify each seller involved
+                    order_items = ProductInOrder.objects.select_related('product__seller').filter(order=order)
+                    sellers_handled = set()
 
-                        seller_data = {
-                            'order_id': order.order_id,
-                            'transaction_id': order.razorpay_payment_id,
-                            'customer_name': order.user.name,
-                            'customer_email': order.user.email,
-                            'phone': order.user.phone,
-                            'address': f"{cust.street_address}, {cust.city}, {cust.district}, {cust.state} - {cust.pincode}" if cust else "",
-                            'datetime_of_payment': localtime(order.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
-                            'products': seller_items,
-                            'grand_total': seller_total,
-                            'reason': reason,
-                            'seller_name': seller.name,
-                        }
+                    for item in order_items:
+                        seller = item.product.seller
+                        if seller and seller.email not in sellers_handled:
+                            seller_items = order_items.filter(product__seller=seller)
+                            seller_total = sum(i.price * i.quantity for i in seller_items)
+                            cust = order.user.customeradditional
 
-                        # ▶ Generate PDF invoice for seller
-                        html = render_to_string('firstapp/payment/seller_cancellation_invoice.html', seller_data)
-                        result = BytesIO()
-                        pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
-                        seller_pdf = result.getvalue()
-                        seller_filename = f"SellerCancellationInvoice_{order.order_id}_{seller.name.replace(' ', '_')}.pdf"
+                            seller_data = {
+                                'order_id': order.order_id,
+                                'transaction_id': order.razorpay_payment_id,
+                                'customer_name': order.user.name,
+                                'customer_email': order.user.email,
+                                'phone': order.user.phone,
+                                'address': f"{cust.street_address}, {cust.city}, {cust.district}, {cust.state} - {cust.pincode}" if cust else "",
+                                'datetime_of_payment': localtime(order.datetime_of_payment).strftime('%d %B %Y, %I:%M %p'),
+                                'products': seller_items,
+                                'grand_total': seller_total,
+                                'reason': reason,
+                                'seller_name': seller.name,
+                            }
 
-                        # ▶ Send email to seller
-                        seller_subject = f"Order #{order.order_id} Cancelled by Customer"
-                        seller_email_html = render_to_string('firstapp/payment/email_seller_cancellation.html', seller_data)
-                        plain_text = strip_tags(seller_email_html)
+                            html = render_to_string('firstapp/payment/seller_cancellation_invoice.html', seller_data)
+                            result = BytesIO()
+                            pisa_status = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+                            if pisa_status.err:
+                                raise Exception(f"Failed to generate PDF for seller {seller.name}.")
+                            seller_pdf = result.getvalue()
+                            seller_filename = f"SellerCancellationInvoice_{order.order_id}_{seller.name.replace(' ', '_')}.pdf"
 
-                        email = EmailMultiAlternatives(
-                            subject=seller_subject,
-                            body=plain_text,
-                            from_email=settings.EMAIL_HOST_USER,
-                            to=[seller.email],
-                        )
-                        email.attach_alternative(seller_email_html, "text/html")
-                        email.attach(seller_filename, seller_pdf, 'application/pdf')
-                        email.send(fail_silently=False)
+                            # ▶ Send email to seller
+                            seller_subject = f"Order #{order.order_id} Cancelled by Customer"
+                            seller_email_html = render_to_string('firstapp/payment/email_seller_cancellation.html', seller_data)
+                            plain_text = strip_tags(seller_email_html)
 
-                        sellers_handled.add(seller.email)
+                            email = EmailMultiAlternatives(
+                                subject=seller_subject,
+                                body=plain_text,
+                                from_email=settings.EMAIL_HOST_USER,
+                                to=[seller.email],
+                            )
+                            email.attach_alternative(seller_email_html, "text/html")
+                            email.attach(seller_filename, seller_pdf, 'application/pdf')
+                            email.send(fail_silently=False)
+
+                            sellers_handled.add(seller.email)
 
                 return redirect('orders')
 
-            else:
-                messages.warning(request, f"Order #{order.order_id} cannot be cancelled (already shipped or delivered).")
+            except Exception as e:
+                # Rollback happens automatically due to transaction.atomic
+                messages.error(request, f"An error occurred while cancelling the order: {str(e)}")
                 return redirect('orders')
 
     else:
