@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-bqikk4=_pm=*yls0mzg7sc&lx(jr4ab+60*8q)ix+5d9td_k!6"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['www.mauryashop.in', 'services.mauryashop.in', 'localhost', '127.0.0.1', 'admin.mauryashop.in']
 
@@ -68,6 +68,7 @@ MIDDLEWARE = [
     "django_hosts.middleware.HostsRequestMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware"
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -79,7 +80,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = "firstproject.urls"
 ROOT_HOSTCONF = 'firstproject.hosts'
 DEFAULT_HOST = 'www'
-PARENT_HOST = 'mauryashop.in:8000'
+PARENT_HOST = 'mauryashop.in'
 HOST_POST = '8000'
 
 TEMPLATES = [
@@ -206,3 +207,5 @@ RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
 
 USE_TZ = True
 TIME_ZONE = 'Asia/Kolkata'
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
