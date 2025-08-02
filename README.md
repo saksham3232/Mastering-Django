@@ -143,12 +143,6 @@ Contributions are welcome! If you have suggestions for improvements, bug fixes, 
 
 ---
 
-## License
-
-Distributed under the [MIT License](LICENSE). See `LICENSE` for more information.
-
----
-
 ## Contact
 
 **Author:** Saksham  
